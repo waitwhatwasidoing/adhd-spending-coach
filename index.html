@@ -3,191 +3,568 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Impulse Spending Pause</title>
+  <title>Your Impulse Pause Friend</title>
   <style>
     body {
-      font-family: "Inter", sans-serif;
-      background: #f9fafb;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100vh;
+      min-height: 100vh;
       margin: 0;
       padding: 20px;
+      color: white;
     }
     .container {
-      background: white;
-      border-radius: 20px;
-      padding: 30px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-      max-width: 500px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+      max-width: 600px;
       width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
     h1 {
-      font-size: 22px;
+      font-size: 28px;
       text-align: center;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
+      font-weight: 700;
+      background: linear-gradient(45deg, #fff, #f0f0f0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
-    p {
+    .tagline {
       text-align: center;
-      color: #666;
-      margin-bottom: 20px;
+      opacity: 0.9;
+      margin-bottom: 30px;
+      font-size: 16px;
+      font-weight: 300;
     }
     .conversation {
-      max-height: 320px;
+      max-height: 400px;
       overflow-y: auto;
-      margin-bottom: 15px;
+      margin-bottom: 20px;
       padding-right: 10px;
     }
-    .message {
-      margin-bottom: 12px;
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-size: 15px;
-      line-height: 1.4;
+    .conversation::-webkit-scrollbar {
+      width: 6px;
     }
-    .ai { background: #e6fffa; border-left: 4px solid #38b2ac; }
-    .user { background: #fff5f5; border-left: 4px solid #f56565; margin-left: 20px; }
-    .status { text-align: center; color: #888; font-size: 14px; margin-bottom: 10px; }
+    .conversation::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 3px;
+    }
+    .message {
+      margin-bottom: 16px;
+      padding: 16px 20px;
+      border-radius: 18px;
+      font-size: 15px;
+      line-height: 1.5;
+      animation: fadeIn 0.3s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .ai { 
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      margin-right: 40px;
+    }
+    .user { 
+      background: rgba(255, 255, 255, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      margin-left: 40px;
+      text-align: right;
+    }
+    .status-container {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .status {
+      font-size: 14px;
+      opacity: 0.8;
+      padding: 8px 16px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      display: inline-block;
+      transition: all 0.3s ease;
+    }
+    .listening {
+      animation: pulse 2s infinite;
+      background: rgba(76, 175, 80, 0.3);
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.8; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.05); }
+    }
+    .controls {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .control-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 14px;
+      margin: 0 8px;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+    .control-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+    .thinking {
+      background: rgba(255, 193, 7, 0.3);
+      animation: thinking 1.5s infinite;
+    }
+    @keyframes thinking {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🧘 Impulse Pause Coach</h1>
-    <p>I’m here to help you pause, breathe, and reflect before spending.</p>
+    <h1>🧠 Your Pause Friend</h1>
+    <p class="tagline">I'm here to chat, listen, and help you think things through</p>
+    
     <div id="conversation" class="conversation"></div>
-    <div class="status" id="status">🎤 Listening...</div>
+    
+    <div class="status-container">
+      <div class="status" id="status">🎤 Getting ready to listen...</div>
+    </div>
+    
+    <div class="controls">
+      <button class="control-btn" onclick="toggleListening()" id="toggleBtn">Start Listening</button>
+      <button class="control-btn" onclick="clearConversation()">Clear Chat</button>
+    </div>
   </div>
+
 <script>
-  // ===== Impulse Pause Coach — Always-on Voice (Netlify/HTTPS) =====
-  let recognition;
-  let isListening = false;
-  let voices = [];
-  let bestVoice = null;
+// =============================================================================
+// NATURAL VOICE ASSISTANT FOR ADHD - Like ChatGPT Voice Mode
+// =============================================================================
 
-  const statusEl = document.getElementById('status');
-  const convoEl  = document.getElementById('conversation');
+let recognition;
+let isListening = false;
+let voices = [];
+let bestVoice = null;
+let conversationContext = [];
+let currentlySpeaking = false;
+let userStartedSpeaking = false;
 
-  // Restore previous conversation
-  const conversationHistory = JSON.parse(localStorage.getItem('impulse_convo') || '[]');
-  conversationHistory.forEach(m => render(m.sender, m.text));
+const statusEl = document.getElementById('status');
+const convoEl = document.getElementById('conversation');
+const toggleBtn = document.getElementById('toggleBtn');
 
-  function render(sender, text) {
-    const el = document.createElement('div');
-    el.className = 'message ' + sender;
-    el.textContent = text;
-    convoEl.appendChild(el);
-    convoEl.scrollTop = convoEl.scrollHeight;
-  }
-  function remember(sender, text) {
-    conversationHistory.push({ sender, text, ts: Date.now() });
-    // keep last 200 msgs
-    localStorage.setItem('impulse_convo', JSON.stringify(conversationHistory.slice(-200)));
-  }
+// Memory system - load previous conversations
+let conversationHistory = JSON.parse(localStorage.getItem('pause_friend_memory') || '[]');
+let userProfile = JSON.parse(localStorage.getItem('pause_friend_profile') || '{}');
 
-  // -------- Voice selection (pick best available, e.g., Natural/Neural/Siri) --------
-  function populateVoices() {
-    voices = speechSynthesis.getVoices();
-    bestVoice =
-      voices.find(v => /Natural|Neural|Siri|Premium/i.test(v.name)) ||
-      voices.find(v => /Google US English|Google UK English|Samantha|Alex/i.test(v.name)) ||
-      voices[0] || null;
-  }
-  if ('speechSynthesis' in window) {
-    speechSynthesis.onvoiceschanged = populateVoices;
-    populateVoices();
-  }
+// Restore conversation on load
+conversationHistory.forEach(msg => {
+  addMessage(msg.sender, msg.text, false);
+});
 
-  function speak(text) {
-    if (!('speechSynthesis' in window)) return;
-    // stop any existing speech
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    if (bestVoice) { u.voice = bestVoice; u.lang = bestVoice.lang; }
-    u.rate = 0.98;
-    u.pitch = 1;
-    speechSynthesis.speak(u);
-  }
+// =============================================================================
+// VOICE SETUP - Find the most natural sounding voice
+// =============================================================================
 
-  // -------- Always-on mic (auto restarts, no button) --------
-  function startRecognition() {
-    if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-      statusEl.textContent = '❌ Voice input not supported on this device.';
-      return;
-    }
-    if (isListening) return;
-
-    recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.continuous = true;
-    recognition.interimResults = false;
-    recognition.lang = 'en-US';
-
-    recognition.onstart = () => { isListening = true; statusEl.textContent = '🎤 Listening...'; };
-
-    // If the user starts making sound/speech → stop TTS immediately (so it “pauses”)
-    recognition.onsoundstart = recognition.onspeechstart = () => {
-      if (speechSynthesis.speaking) speechSynthesis.cancel();
-    };
-
-    recognition.onresult = (e) => {
-      const res = e.results[e.results.length - 1];
-      if (!res.isFinal) return;
-      const transcript = res[0].transcript.trim();
-      render('user', transcript);
-      remember('user', transcript);
-
-      const reply = coachReply(transcript);
-      render('ai', reply);
-      remember('ai', reply);
-      speak(reply);
-    };
-
-    recognition.onerror = (e) => {
-      statusEl.textContent = (e.error === 'not-allowed')
-        ? '⚠️ Please allow microphone access.'
-        : '⚠️ Voice error. Reconnecting...';
-    };
-
-    recognition.onend = () => {
-      isListening = false;
-      // auto-restart to keep it always listening
-      setTimeout(() => startRecognition(), 400);
-    };
-
-    recognition.start();
-  }
-
-  // -------- Friendly ADHD coach logic + checklist nudges --------
-  function coachReply(input) {
-    const lower = input.toLowerCase();
-    const checks = [
-      "Do you need this or just want it?",
-      "Where will you store it?",
-      "Can you wait 24 hours?",
-      "How might you feel about it tomorrow?"
-    ];
-
-    const price = (input.match(/(?:₹|rs\.?\s*|inr\s*|\$)\s*([0-9][0-9,\.]*)/i) || [])[1];
-    const isBuying = /(buy|purchase|order|sale|discount)/i.test(lower);
-
-    if (isBuying) {
-      return `Got it — you're considering this. ${checks[0]} ${price ? `It's around ${price}, right? ` : ""}${checks[2]} I can remember this and check back later if you want.`;
-    } else {
-      const soft = [
-        "Take a breath with me. What's pulling you toward this?",
-        "I’m here. Is this about excitement, stress, or avoiding something else?",
-        "If you didn’t buy it today, what would change for you?"
-      ];
-      return soft[Math.floor(Math.random() * soft.length)];
-    }
-  }
-
-  // -------- Boot --------
-  const greeting = "👋 Hey, I’m here with you. What’s on your mind today?";
-  render('ai', greeting); remember('ai', greeting);
-  startRecognition();
-</script>
-
+function setupVoices() {
+  voices = speechSynthesis.getVoices();
   
+  // Prioritize natural-sounding voices
+  const preferredVoices = [
+    'Samantha', 'Alex', 'Siri Female', 'Google US English Female',
+    'Microsoft Zira', 'Natural', 'Neural', 'Premium'
+  ];
+  
+  bestVoice = voices.find(voice => 
+    preferredVoices.some(pref => voice.name.includes(pref))
+  ) || voices.find(voice => voice.lang.startsWith('en')) || voices[0];
+}
+
+if ('speechSynthesis' in window) {
+  speechSynthesis.onvoiceschanged = setupVoices;
+  setupVoices();
+}
+
+// =============================================================================
+// NATURAL SPEECH - Interrupt if user starts talking
+// =============================================================================
+
+function speak(text) {
+  if (!('speechSynthesis' in window)) return;
+  
+  // Stop any current speech
+  speechSynthesis.cancel();
+  currentlySpeaking = true;
+  
+  const utterance = new SpeechSynthesisUtterance(text);
+  if (bestVoice) {
+    utterance.voice = bestVoice;
+    utterance.lang = bestVoice.lang;
+  }
+  
+  // Natural speech settings
+  utterance.rate = 0.9;
+  utterance.pitch = 1.1;
+  utterance.volume = 0.8;
+  
+  utterance.onstart = () => {
+    statusEl.textContent = '🗣️ Speaking...';
+    statusEl.className = 'status thinking';
+  };
+  
+  utterance.onend = () => {
+    currentlySpeaking = false;
+    if (isListening) {
+      statusEl.textContent = '🎤 Listening...';
+      statusEl.className = 'status listening';
+    }
+  };
+  
+  speechSynthesis.speak(utterance);
+}
+
+// =============================================================================
+// SMART SPEECH RECOGNITION - Handles interruptions naturally
+// =============================================================================
+
+function startListening() {
+  if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+    updateStatus('❌ Voice not supported on this device');
+    return;
+  }
+  
+  if (isListening) return;
+
+  recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  
+  // Configure for natural conversation
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'en-US';
+  recognition.maxAlternatives = 3;
+
+  recognition.onstart = () => {
+    isListening = true;
+    updateStatus('🎤 Listening...', 'listening');
+    toggleBtn.textContent = 'Stop Listening';
+  };
+
+  recognition.onsoundstart = () => {
+    userStartedSpeaking = true;
+    // IMMEDIATELY stop speaking if user starts talking
+    if (currentlySpeaking) {
+      speechSynthesis.cancel();
+      currentlySpeaking = false;
+    }
+  };
+
+  recognition.onresult = (event) => {
+    let interimTranscript = '';
+    let finalTranscript = '';
+
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const transcript = event.results[i][0].transcript;
+      if (event.results[i].isFinal) {
+        finalTranscript += transcript;
+      } else {
+        interimTranscript += transcript;
+      }
+    }
+
+    // Show what we're hearing in real-time
+    if (interimTranscript) {
+      updateStatus(`👂 Hearing: "${interimTranscript}"`, 'thinking');
+    }
+
+    // Process final speech
+    if (finalTranscript.trim()) {
+      const userInput = finalTranscript.trim();
+      addMessage('user', userInput);
+      updateStatus('🧠 Thinking...', 'thinking');
+      
+      // Generate natural response
+      setTimeout(() => {
+        const response = generateNaturalResponse(userInput);
+        addMessage('ai', response);
+        speak(response);
+      }, 800); // Brief pause to feel more natural
+    }
+  };
+
+  recognition.onerror = (event) => {
+    let errorMsg = '⚠️ ';
+    switch(event.error) {
+      case 'not-allowed':
+        errorMsg += 'Please allow microphone access';
+        break;
+      case 'network':
+        errorMsg += 'Connection issue. Trying again...';
+        setTimeout(() => startListening(), 2000);
+        break;
+      default:
+        errorMsg += 'Voice error. Reconnecting...';
+        setTimeout(() => startListening(), 1000);
+    }
+    updateStatus(errorMsg);
+  };
+
+  recognition.onend = () => {
+    isListening = false;
+    toggleBtn.textContent = 'Start Listening';
+    if (!currentlySpeaking) {
+      updateStatus('🎤 Tap to start listening');
+    }
+  };
+
+  recognition.start();
+}
+
+// =============================================================================
+// NATURAL CONVERSATION AI - Context-aware responses
+// =============================================================================
+
+function generateNaturalResponse(input) {
+  const lowerInput = input.toLowerCase();
+  
+  // Remember this interaction
+  conversationContext.push({
+    user: input,
+    timestamp: Date.now(),
+    context: extractContext(input)
+  });
+  
+  // Keep context manageable
+  if (conversationContext.length > 20) {
+    conversationContext = conversationContext.slice(-15);
+  }
+
+  // Check if user is talking about a purchase
+  const purchaseKeywords = ['buy', 'buying', 'purchase', 'order', 'sale', 'discount', 'deal', 'shopping', 'cart', 'checkout'];
+  const isPurchaseRelated = purchaseKeywords.some(keyword => lowerInput.includes(keyword));
+  
+  // Extract price if mentioned
+  const priceMatch = input.match(/[\$₹€£]\s*[\d,]+|rs\.?\s*[\d,]+|\d+\s*(dollar|bucks|rupees)/i);
+  const price = priceMatch ? priceMatch[0] : null;
+  
+  // Check conversation history for context
+  const recentPurchaseTopics = conversationContext
+    .slice(-5)
+    .filter(ctx => ctx.context.isPurchase)
+    .map(ctx => ctx.context.item)
+    .filter(Boolean);
+
+  let response = '';
+
+  if (isPurchaseRelated) {
+    response = generatePurchaseResponse(input, price, recentPurchaseTopics);
+  } else if (lowerInput.includes('hello') || lowerInput.includes('hi') || lowerInput.includes('hey')) {
+    response = generateGreeting();
+  } else if (lowerInput.includes('help') || lowerInput.includes('what') || lowerInput.includes('how')) {
+    response = generateHelpResponse(input);
+  } else {
+    response = generateCasualResponse(input);
+  }
+
+  return response;
+}
+
+function generatePurchaseResponse(input, price, recentTopics) {
+  // Track which pause questions we've asked for this item
+  if (!userProfile.currentPurchase) {
+    userProfile.currentPurchase = {
+      item: extractItemName(input) || 'this item',
+      questionsAsked: [],
+      startTime: Date.now()
+    };
+  }
+
+  const pauseQuestions = [
+    {
+      id: 'need_vs_want',
+      question: "Do you need this, or do you just want it?",
+      natural: "Let's pause together. Do you actually need this, or is it more of a want?"
+    },
+    {
+      id: 'storage',
+      question: "Where will you store this?",
+      natural: "Good question to think about - where would you actually put this once you get it?"
+    },
+    {
+      id: 'wait_24h',
+      question: "Can you wait 24 hours before buying this?",
+      natural: "Here's something that helps me - could you wait 24 hours before getting this? What do you think?"
+    },
+    {
+      id: 'tomorrow_feeling',
+      question: "How will you feel about this purchase tomorrow?",
+      natural: "Let's imagine tomorrow morning - how do you think you'll feel about buying this today?"
+    }
+  ];
+
+  const askedQuestions = userProfile.currentPurchase.questionsAsked || [];
+  const unaskedQuestions = pauseQuestions.filter(q => !askedQuestions.includes(q.id));
+  
+  let response = '';
+  
+  // First time discussing this purchase
+  if (askedQuestions.length === 0) {
+    response = `I hear you thinking about ${userProfile.currentPurchase.item}. Let's take a moment to pause together. ${unaskedQuestions[0].natural}`;
+    userProfile.currentPurchase.questionsAsked.push(unaskedQuestions[0].id);
+  } 
+  // Continue with next question
+  else if (unaskedQuestions.length > 0) {
+    const nextQ = unaskedQuestions[0];
+    response = `Thanks for sharing that. ${nextQ.natural}`;
+    userProfile.currentPurchase.questionsAsked.push(nextQ.id);
+  }
+  // All questions asked - summarize
+  else {
+    response = "We've thought through all the key questions together. You know yourself best - what feels right to you now?";
+    // Reset for next purchase discussion
+    userProfile.currentPurchase = null;
+  }
+
+  if (price && askedQuestions.length === 0) {
+    response += ` I noticed you mentioned ${price}.`;
+  }
+  
+  // Save progress
+  localStorage.setItem('pause_friend_profile', JSON.stringify(userProfile));
+  
+  return response;
+}
+
+function generateGreeting() {
+  const time = new Date().getHours();
+  let timeGreeting = '';
+  
+  if (time < 12) timeGreeting = 'Good morning';
+  else if (time < 17) timeGreeting = 'Good afternoon';
+  else timeGreeting = 'Good evening';
+  
+  const greetings = [
+    `${timeGreeting}! I'm here and ready to chat. What's on your mind?`,
+    `Hey there! Nice to hear your voice. How are you feeling today?`,
+    `${timeGreeting}! I'm your pause friend - here to listen and think things through with you.`,
+    `Hi! Good to connect with you again. What's happening in your world?`
+  ];
+  
+  return greetings[Math.floor(Math.random() * greetings.length)];
+}
+
+function generateHelpResponse(input) {
+  return "I'm here to be your thinking buddy, especially when you're considering purchases. We can talk through the impulse pause questions together, or just chat about what's on your mind. I remember our conversations, so feel free to reference things we've talked about before.";
+}
+
+function generateCasualResponse(input) {
+  const responses = [
+    "I'm listening. Tell me more about that.",
+    "That sounds important to you. What's behind that feeling?",
+    "I hear you. How are you processing that right now?",
+    "Thanks for sharing that with me. What's your sense of what to do next?",
+    "I'm here with you. What feels most important about this situation?"
+  ];
+  
+  return responses[Math.floor(Math.random() * responses.length)];
+}
+
+function extractContext(input) {
+  const lowerInput = input.toLowerCase();
+  
+  return {
+    isPurchase: /buy|purchase|order|sale|discount|deal|shopping/.test(lowerInput),
+    item: extractItemName(input),
+    emotion: extractEmotion(lowerInput),
+    urgency: /now|today|urgent|need/.test(lowerInput)
+  };
+}
+
+function extractItemName(input) {
+  // Simple item extraction - could be enhanced
+  const words = input.split(' ');
+  const itemKeywords = ['phone', 'laptop', 'shoes', 'clothes', 'book', 'game', 'headphones', 'watch'];
+  return itemKeywords.find(keyword => input.toLowerCase().includes(keyword)) || null;
+}
+
+function extractEmotion(input) {
+  if (/excited|love|amazing|awesome/.test(input)) return 'excited';
+  if (/stressed|anxious|worried/.test(input)) return 'stressed';
+  if (/bored|boring/.test(input)) return 'bored';
+  return 'neutral';
+}
+
+// =============================================================================
+// UI MANAGEMENT
+// =============================================================================
+
+function addMessage(sender, text, save = true) {
+  const messageEl = document.createElement('div');
+  messageEl.className = `message ${sender}`;
+  messageEl.textContent = text;
+  convoEl.appendChild(messageEl);
+  convoEl.scrollTop = convoEl.scrollHeight;
+  
+  if (save) {
+    conversationHistory.push({ sender, text, timestamp: Date.now() });
+    // Keep last 50 messages
+    if (conversationHistory.length > 50) {
+      conversationHistory = conversationHistory.slice(-40);
+    }
+    localStorage.setItem('pause_friend_memory', JSON.stringify(conversationHistory));
+  }
+}
+
+function updateStatus(text, className = '') {
+  statusEl.textContent = text;
+  statusEl.className = `status ${className}`;
+}
+
+function toggleListening() {
+  if (isListening) {
+    recognition.stop();
+    speechSynthesis.cancel();
+  } else {
+    startListening();
+  }
+}
+
+function clearConversation() {
+  convoEl.innerHTML = '';
+  conversationHistory = [];
+  conversationContext = [];
+  localStorage.removeItem('pause_friend_memory');
+  updateStatus('🎤 Conversation cleared. Ready to start fresh!');
+}
+
+// =============================================================================
+// INITIALIZATION
+// =============================================================================
+
+// Welcome message on first load
+if (conversationHistory.length === 0) {
+  setTimeout(() => {
+    const welcomeMsg = "Hey! I'm your pause friend. I'm here to listen, remember our conversations, and help you think through decisions - especially about purchases. Want to start by telling me how you're doing today?";
+    addMessage('ai', welcomeMsg);
+    speak(welcomeMsg);
+  }, 1000);
+}
+
+// Auto-start listening after a brief moment
+setTimeout(() => {
+  updateStatus('🎤 Ready! Tap "Start Listening" to begin');
+}, 2000);
+
+</script>
 </body>
 </html>
