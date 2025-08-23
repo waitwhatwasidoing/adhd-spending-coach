@@ -1,424 +1,193 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADHD Voice Spending Coach</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .container {
-            background: white;
-            border-radius: 24px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
-            max-width: 500px;
-            width: 100%;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .header h1 {
-            color: #2d3748;
-            font-size: 24px;
-            margin-bottom: 8px;
-            font-weight: 700;
-        }
-
-        .header p {
-            color: #718096;
-            font-size: 16px;
-        }
-
-        .voice-interface {
-            background: linear-gradient(135deg, #ff6b6b, #feca57);
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 30px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .voice-interface::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            animation: pulse 3s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(0.8); opacity: 0.5; }
-            50% { transform: scale(1.2); opacity: 0.8; }
-        }
-
-        .voice-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .voice-status {
-            color: white;
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .voice-instruction {
-            color: rgba(255,255,255,0.9);
-            font-size: 14px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .controls {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-bottom: 30px;
-        }
-
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-primary {
-            background: #4299e1;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #3182ce;
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            background: #e2e8f0;
-            color: #4a5568;
-        }
-
-        .btn-secondary:hover {
-            background: #cbd5e0;
-            transform: translateY(-2px);
-        }
-
-        .conversation {
-            background: #f7fafc;
-            border-radius: 16px;
-            padding: 25px;
-            margin-bottom: 20px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .message {
-            margin-bottom: 15px;
-            padding: 12px 16px;
-            border-radius: 12px;
-            font-size: 15px;
-            line-height: 1.5;
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .message.ai {
-            background: linear-gradient(135deg, #e6fffa, #b2f5ea);
-            border-left: 4px solid #38b2ac;
-        }
-
-        .message.user {
-            background: linear-gradient(135deg, #fff5f5, #fed7d7);
-            border-left: 4px solid #f56565;
-            margin-left: 20px;
-        }
-
-        .quick-actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 20px;
-        }
-
-        .quick-btn {
-            padding: 12px;
-            background: white;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .quick-btn:hover {
-            border-color: #4299e1;
-            background: #ebf8ff;
-        }
-
-        .listening {
-            background: linear-gradient(135deg, #48bb78, #38a169) !important;
-        }
-
-        .processing {
-            background: linear-gradient(135deg, #ed8936, #dd6b20) !important;
-        }
-
-        .budget-info {
-            background: #edf2f7;
-            border-radius: 12px;
-            padding: 15px;
-            margin-top: 20px;
-            text-align: center;
-            font-size: 14px;
-            color: #4a5568;
-        }
-
-        .budget-amount {
-            font-size: 18px;
-            font-weight: 700;
-            color: #2d3748;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Impulse Spending Pause</title>
+  <style>
+    body {
+      font-family: "Inter", sans-serif;
+      background: #f9fafb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+      max-width: 500px;
+      width: 100%;
+    }
+    h1 {
+      font-size: 22px;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    p {
+      text-align: center;
+      color: #666;
+      margin-bottom: 20px;
+    }
+    .conversation {
+      max-height: 320px;
+      overflow-y: auto;
+      margin-bottom: 15px;
+      padding-right: 10px;
+    }
+    .message {
+      margin-bottom: 12px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 15px;
+      line-height: 1.4;
+    }
+    .ai { background: #e6fffa; border-left: 4px solid #38b2ac; }
+    .user { background: #fff5f5; border-left: 4px solid #f56565; margin-left: 20px; }
+    .status { text-align: center; color: #888; font-size: 14px; margin-bottom: 10px; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>💰 Smart Spending Coach</h1>
-            <p>Your AI buddy for mindful purchases</p>
-        </div>
+  <div class="container">
+    <h1>🧘 Impulse Pause Coach</h1>
+    <p>I’m here to help you pause, breathe, and reflect before spending.</p>
+    <div id="conversation" class="conversation"></div>
+    <div class="status" id="status">🎤 Listening...</div>
+  </div>
+<script>
+  // ===== Impulse Pause Coach — Always-on Voice (Netlify/HTTPS) =====
+  let recognition;
+  let isListening = false;
+  let voices = [];
+  let bestVoice = null;
 
-        <div class="voice-interface" id="voiceInterface">
-            <div class="voice-icon">🎤</div>
-            <div class="voice-status" id="voiceStatus">Ready to Listen</div>
-            <div class="voice-instruction" id="voiceInstruction">Tap the microphone and tell me what you're thinking about buying</div>
-        </div>
+  const statusEl = document.getElementById('status');
+  const convoEl  = document.getElementById('conversation');
 
-        <div class="controls">
-            <button class="btn btn-primary" id="startBtn" onclick="startListening()">
-                🎤 Start Talking
-            </button>
-            <button class="btn btn-secondary" id="stopBtn" onclick="stopListening()" style="display: none;">
-                ⏹️ Stop
-            </button>
-        </div>
+  // Restore previous conversation
+  const conversationHistory = JSON.parse(localStorage.getItem('impulse_convo') || '[]');
+  conversationHistory.forEach(m => render(m.sender, m.text));
 
-        <div class="conversation" id="conversation">
-            <div class="message ai">
-                👋 Hi! I'm your spending coach. I'm here to help you pause and think through purchases. What's catching your eye today?
-            </div>
-        </div>
+  function render(sender, text) {
+    const el = document.createElement('div');
+    el.className = 'message ' + sender;
+    el.textContent = text;
+    convoEl.appendChild(el);
+    convoEl.scrollTop = convoEl.scrollHeight;
+  }
+  function remember(sender, text) {
+    conversationHistory.push({ sender, text, ts: Date.now() });
+    // keep last 200 msgs
+    localStorage.setItem('impulse_convo', JSON.stringify(conversationHistory.slice(-200)));
+  }
 
-        <div class="quick-actions">
-            <button class="quick-btn" onclick="quickQuestion('Should I buy these headphones for $150?')">
-                🎧 Headphones Example
-            </button>
-            <button class="quick-btn" onclick="quickQuestion('I want to buy a new jacket')">
-                🧥 Clothing Example
-            </button>
-            <button class="quick-btn" onclick="quickQuestion('There\'s a sale on kitchen gadgets')">
-                🍳 Kitchen Gadget
-            </button>
-            <button class="quick-btn" onclick="quickQuestion('I saw a cool phone case')">
-                📱 Phone Accessory
-            </button>
-        </div>
+  // -------- Voice selection (pick best available, e.g., Natural/Neural/Siri) --------
+  function populateVoices() {
+    voices = speechSynthesis.getVoices();
+    bestVoice =
+      voices.find(v => /Natural|Neural|Siri|Premium/i.test(v.name)) ||
+      voices.find(v => /Google US English|Google UK English|Samantha|Alex/i.test(v.name)) ||
+      voices[0] || null;
+  }
+  if ('speechSynthesis' in window) {
+    speechSynthesis.onvoiceschanged = populateVoices;
+    populateVoices();
+  }
 
-        <div class="budget-info">
-            💡 Monthly Discretionary Budget: <span class="budget-amount">$300</span><br>
-            Remaining: <span class="budget-amount" id="remaining">$185</span>
-        </div>
-    </div>
+  function speak(text) {
+    if (!('speechSynthesis' in window)) return;
+    // stop any existing speech
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    if (bestVoice) { u.voice = bestVoice; u.lang = bestVoice.lang; }
+    u.rate = 0.98;
+    u.pitch = 1;
+    speechSynthesis.speak(u);
+  }
 
-    <script>
-        let isListening = false;
-        let conversationHistory = [];
-        let recognition;
-        let currentBudget = 185;
+  // -------- Always-on mic (auto restarts, no button) --------
+  function startRecognition() {
+    if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+      statusEl.textContent = '❌ Voice input not supported on this device.';
+      return;
+    }
+    if (isListening) return;
 
-        // Initialize speech recognition if available
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.continuous = false;
-            recognition.interimResults = false;
-            recognition.lang = 'en-US';
+    recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
 
-            recognition.onresult = function(event) {
-                const transcript = event.results[0][0].transcript;
-                addMessage('user', transcript);
-                processUserInput(transcript);
-            };
+    recognition.onstart = () => { isListening = true; statusEl.textContent = '🎤 Listening...'; };
 
-            recognition.onerror = function(event) {
-                console.error('Speech recognition error:', event.error);
-                updateVoiceInterface('error', 'Sorry, I couldn\'t hear that. Try again?', '🔇');
-            };
+    // If the user starts making sound/speech → stop TTS immediately (so it “pauses”)
+    recognition.onsoundstart = recognition.onspeechstart = () => {
+      if (speechSynthesis.speaking) speechSynthesis.cancel();
+    };
 
-            recognition.onend = function() {
-                isListening = false;
-                document.getElementById('startBtn').style.display = 'inline-flex';
-                document.getElementById('stopBtn').style.display = 'none';
-            };
-        }
+    recognition.onresult = (e) => {
+      const res = e.results[e.results.length - 1];
+      if (!res.isFinal) return;
+      const transcript = res[0].transcript.trim();
+      render('user', transcript);
+      remember('user', transcript);
 
-        function startListening() {
-            if (!recognition) {
-                alert('Speech recognition not supported in this browser. Try Chrome or Edge!');
-                return;
-            }
+      const reply = coachReply(transcript);
+      render('ai', reply);
+      remember('ai', reply);
+      speak(reply);
+    };
 
-            isListening = true;
-            updateVoiceInterface('listening', 'I\'m listening...', '👂');
-            document.getElementById('startBtn').style.display = 'none';
-            document.getElementById('stopBtn').style.display = 'inline-flex';
-            recognition.start();
-        }
+    recognition.onerror = (e) => {
+      statusEl.textContent = (e.error === 'not-allowed')
+        ? '⚠️ Please allow microphone access.'
+        : '⚠️ Voice error. Reconnecting...';
+    };
 
-        function stopListening() {
-            if (recognition && isListening) {
-                recognition.stop();
-            }
-        }
+    recognition.onend = () => {
+      isListening = false;
+      // auto-restart to keep it always listening
+      setTimeout(() => startRecognition(), 400);
+    };
 
-        function updateVoiceInterface(state, status, icon) {
-            const voiceInterface = document.getElementById('voiceInterface');
-            const voiceStatus = document.getElementById('voiceStatus');
-            const voiceInstruction = document.getElementById('voiceInstruction');
-            
-            voiceInterface.className = `voice-interface ${state}`;
-            voiceStatus.textContent = status;
-            
-            if (state === 'listening') {
-                voiceInstruction.textContent = 'Speak clearly about what you want to buy...';
-            } else if (state === 'processing') {
-                voiceInstruction.textContent = 'Let me think about this...';
-            } else {
-                voiceInstruction.textContent = 'Tap the microphone and tell me what you\'re thinking about buying';
-            }
-            
-            document.querySelector('.voice-icon').textContent = icon;
-        }
+    recognition.start();
+  }
 
-        function addMessage(sender, text) {
-            const conversation = document.getElementById('conversation');
-            const message = document.createElement('div');
-            message.className = `message ${sender}`;
-            message.textContent = text;
-            conversation.appendChild(message);
-            conversation.scrollTop = conversation.scrollHeight;
-        }
+  // -------- Friendly ADHD coach logic + checklist nudges --------
+  function coachReply(input) {
+    const lower = input.toLowerCase();
+    const checks = [
+      "Do you need this or just want it?",
+      "Where will you store it?",
+      "Can you wait 24 hours?",
+      "How might you feel about it tomorrow?"
+    ];
 
-        function processUserInput(input) {
-            updateVoiceInterface('processing', 'Thinking...', '🤔');
-            
-            // Simulate AI processing delay
-            setTimeout(() => {
-                const response = generateAIResponse(input);
-                addMessage('ai', response);
-                updateVoiceInterface('ready', 'Ready to Listen', '🎤');
-                
-                // Use text-to-speech if available
-                if ('speechSynthesis' in window) {
-                    const utterance = new SpeechSynthesisUtterance(response);
-                    utterance.rate = 0.9;
-                    utterance.pitch = 1;
-                    speechSynthesis.speak(utterance);
-                }
-            }, 1500);
-        }
+    const price = (input.match(/(?:₹|rs\.?\s*|inr\s*|\$)\s*([0-9][0-9,\.]*)/i) || [])[1];
+    const isBuying = /(buy|purchase|order|sale|discount)/i.test(lower);
 
-        function generateAIResponse(input) {
-            const lowerInput = input.toLowerCase();
-            
-            if (lowerInput.includes('headphones') || lowerInput.includes('earbuds')) {
-                return "I hear you're interested in headphones! Let's pause for a moment. What's wrong with your current audio setup? And be honest - if you don't buy these today, will you even remember them next week? 🎧";
-            }
-            
-            if (lowerInput.includes('jacket') || lowerInput.includes('clothes') || lowerInput.includes('shirt')) {
-                return "Clothing purchases can be tricky! Quick check: do you have space in your closet? When did you last wear something similar? Sometimes our brains crave newness when we're actually just bored with our current options. 👕";
-            }
-            
-            if (lowerInput.includes('kitchen') || lowerInput.includes('gadget') || lowerInput.includes('appliance')) {
-                return "Kitchen gadgets are SO tempting! But here's the ADHD reality check: when did you last use that other 'amazing' kitchen tool you bought? Where will this actually live in your kitchen? Let's be real about your cooking habits. 🍳";
-            }
-            
-            if (lowerInput.includes('sale') || lowerInput.includes('discount')) {
-                return "Ah, the sale trap! Your ADHD brain is getting excited by the urgency, right? But remember: it's not a deal if you wouldn't buy it at full price. Take a breath. Is this solving a real problem or just feeding the dopamine rush? 💸";
-            }
-            
-            if (lowerInput.includes('phone') || lowerInput.includes('case') || lowerInput.includes('tech')) {
-                return "Tech accessories are dopamine magnets for ADHD brains! Quick reality check: is your current setup actually broken, or are you just craving something new? Try the 24-hour rule - bookmark it and see if you still care tomorrow. 📱";
-            }
-            
-            // Extract price if mentioned
-            const priceMatch = input.match(/\$(\d+)/);
-            if (priceMatch) {
-                const price = parseInt(priceMatch[1]);
-                if (price > currentBudget) {
-                    return `Hold up! That's $${price}, but you only have $${currentBudget} left in your budget this month. That would put you over. Is this really worth going into the red? Maybe there's a different option? 💰`;
-                } else if (price > currentBudget * 0.5) {
-                    return `That's $${price} - more than half your remaining budget! This would leave you with only $${currentBudget - price} for the rest of the month. Are you comfortable with that? 🤔`;
-                }
-            }
-            
-            // Default responses for ADHD-specific guidance
-            const responses = [
-                "Let's slow down and think this through. What problem is this purchase actually solving? Is it a need or just your brain seeking novelty? 🧠",
-                "I can hear the excitement in your voice! That's your dopamine talking. Let's use the pause questions: Do you need this, or just want it? How will you feel tomorrow? 💭",
-                "Before we decide, let's check in: Are you bored, stressed, or procrastinating on something else? Sometimes shopping is just our brain avoiding other tasks. 🎯",
-                "Good pause! Your ADHD brain loves instant gratification, but future you will thank present you for thinking this through. What's the real motivation here? ✨"
-            ];
-            
-            return responses[Math.floor(Math.random() * responses.length)];
-        }
+    if (isBuying) {
+      return `Got it — you're considering this. ${checks[0]} ${price ? `It's around ${price}, right? ` : ""}${checks[2]} I can remember this and check back later if you want.`;
+    } else {
+      const soft = [
+        "Take a breath with me. What's pulling you toward this?",
+        "I’m here. Is this about excitement, stress, or avoiding something else?",
+        "If you didn’t buy it today, what would change for you?"
+      ];
+      return soft[Math.floor(Math.random() * soft.length)];
+    }
+  }
 
-        function quickQuestion(question) {
-            addMessage('user', question);
-            processUserInput(question);
-        }
+  // -------- Boot --------
+  const greeting = "👋 Hey, I’m here with you. What’s on your mind today?";
+  render('ai', greeting); remember('ai', greeting);
+  startRecognition();
+</script>
 
-        // Add some initial conversation starters
-        setTimeout(() => {
-            addMessage('ai', '💡 Pro tip: I can hear the excitement in your voice and adjust my advice accordingly. Try saying "I really want to buy..." and I\'ll help you think it through!');
-        }, 2000);
-    </script>
+  
 </body>
 </html>
