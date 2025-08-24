@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AI Impulse Pause Coach</title>
+  <title>ADHD Impulse Pause Coach</title>
   <style>
     * {
       margin: 0;
@@ -39,7 +39,7 @@
     }
     
     .header h1 {
-      font-size: 32px;
+      font-size: 28px;
       font-weight: 700;
       background: linear-gradient(45deg, #fff, #f0f0f0);
       -webkit-background-clip: text;
@@ -50,14 +50,45 @@
     
     .header p {
       opacity: 0.9;
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 300;
+    }
+
+    .questions-box {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 25px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .questions-box h3 {
+      font-size: 16px;
+      margin-bottom: 15px;
+      text-align: center;
+      opacity: 0.9;
+    }
+
+    .question-item {
+      font-size: 14px;
+      margin-bottom: 8px;
+      opacity: 0.8;
+      padding-left: 20px;
+      position: relative;
+    }
+
+    .question-item::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: #4CAF50;
+      font-weight: bold;
     }
     
     .chat-container {
       background: rgba(255, 255, 255, 0.05);
       border-radius: 16px;
-      height: 400px;
+      height: 350px;
       overflow-y: auto;
       padding: 20px;
       margin-bottom: 20px;
@@ -165,8 +196,16 @@
 <body>
   <div class="container">
     <div class="header">
-      <h1>🧠 AI Impulse Pause Coach</h1>
-      <p>Your intelligent ADHD-friendly companion</p>
+      <h1>🛑 ADHD Impulse Pause Coach</h1>
+      <p>4 simple questions to cut through the mental fog</p>
+    </div>
+
+    <div class="questions-box">
+      <h3>The 4 Questions I'll Ask:</h3>
+      <div class="question-item">Do I need this, or do I just want it?</div>
+      <div class="question-item">Where will I store this?</div>
+      <div class="question-item">Can I wait 24 hours before buying this?</div>
+      <div class="question-item">How will I feel about this purchase tomorrow?</div>
     </div>
     
     <div id="chatContainer" class="chat-container">
@@ -176,40 +215,43 @@
     <div class="controls">
       <button id="micBtn" class="btn" onclick="toggleMicrophone()">
         <span id="micIcon">🎤</span>
-        <span id="micText">Start Listening</span>
+        <span id="micText">Start Talking</span>
       </button>
       <button class="btn" onclick="clearChat()">
-        🗑️ Clear
+        🔄 Start Over
       </button>
     </div>
     
     <div id="status" class="status">
-      Ready to help you pause before impulse purchases
+      Tell me what you're thinking of buying
     </div>
   </div>
 
 <script>
-// =============================================================================
-// AI IMPULSE PAUSE COACH - NETLIFY FUNCTIONS INTEGRATION
-// Connects to your existing Netlify Functions with Groq & Hugging Face APIs
-// =============================================================================
-
-class AIImpulseCoach {
+class FocusedImpulseCoach {
   constructor() {
     this.isListening = false;
     this.recognition = null;
     this.conversationHistory = [];
+    this.currentQuestion = 0; // Track which question we're on
     
-    // Netlify function endpoints
+    // The 4 EXACT questions from the PDF
+    this.questions = [
+      "Do I need this, or do I just want it?",
+      "Where will I store this?",
+      "Can I wait 24 hours before buying this?", 
+      "How will I feel about this purchase tomorrow?"
+    ];
+    
+    // Netlify function endpoint
     this.chatEndpoint = '/.netlify/functions/chat';
     
     this.initializeApp();
   }
 
   async initializeApp() {
-    // Show welcome message
-    const welcomeMsg = "Hi! I'm here to help you pause before impulse purchases. Tell me what you're thinking about buying and I'll guide you through some important questions.";
-    this.addMessage('ai', welcomeMsg, 'AI Coach');
+    const welcomeMsg = "Tell me what you're thinking of buying and I'll help you work through it with 4 simple questions.";
+    this.addMessage('ai', welcomeMsg, 'Pause Coach');
     this.speak(welcomeMsg);
   }
 
@@ -222,49 +264,56 @@ class AIImpulseCoach {
         },
         body: JSON.stringify({
           message: userMessage,
-          history: this.conversationHistory.slice(-10).map(msg => ({
+          history: this.conversationHistory.slice(-8).map(msg => ({
             role: msg.sender === 'user' ? 'user' : 'assistant',
             content: msg.text
           })),
-          systemPrompt: `You are an ADHD-friendly impulse purchase coach. Your job is to help people pause and think through purchases by guiding them through these 4 questions in order:
+          systemPrompt: `You ONLY ask these 4 questions IN ORDER for impulse purchases:
 
 1. "Do I need this, or do I just want it?"
 2. "Where will I store this?"  
 3. "Can I wait 24 hours before buying this?"
 4. "How will I feel about this purchase tomorrow?"
 
-Be conversational, empathetic, and help them work through their thoughts. Don't just ask the questions directly - weave them naturally into conversation based on what they tell you. Help them think through the mental fog that comes with ADHD impulse decisions.
+RULES:
+- Ask ONE question at a time
+- Move to next question only after they answer the current one
+- Keep responses SHORT (1 sentence) - ADHD brains get overwhelmed
+- ONLY focus on these 4 questions - nothing else
+- If they go off topic, gently bring them back to the current question
+- Be supportive and casual, like a helpful friend
 
-Keep responses concise (2-3 sentences max) and supportive. Focus on one question at a time based on where they are in their thinking process.`
+Track where you are in the 4 questions and move through them in order.`
         })
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        throw new Error(`HTTP ${response.status}`);
       }
 
       const data = await response.json();
       return {
-        text: data.response || data.message || "I'm here to help you think through this purchase decision.",
+        text: data.response || this.getOfflineQuestion(),
         service: data.service || 'AI'
       };
 
     } catch (error) {
-      console.error('Netlify function call failed:', error);
-      
-      // Emergency fallback - guide to core questions
-      const fallbackResponses = [
-        "Let's pause for a moment. What's making you want to buy this right now?",
-        "I'm having trouble connecting, but let's think: do you actually need this item, or is it more of a want?",
-        "Let's focus on what matters: where would you put this item once you get it home?",
-        "Take a breath with me. How do you think you'll feel about this purchase tomorrow morning?"
-      ];
-      
+      console.error('API failed:', error);
       return {
-        text: fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)],
-        service: 'Offline Coach'
+        text: this.getOfflineQuestion(),
+        service: 'Offline'
       };
     }
+  }
+
+  getOfflineQuestion() {
+    // Simple logic: ask questions in order based on conversation length
+    const questionIndex = Math.min(
+      Math.floor(this.conversationHistory.filter(m => m.sender === 'user').length / 2),
+      this.questions.length - 1
+    );
+    
+    return this.questions[questionIndex];
   }
 
   addMessage(sender, text, service = null) {
@@ -273,7 +322,6 @@ Keep responses concise (2-3 sentences max) and supportive. Focus on one question
     messageEl.className = `message ${sender}-message`;
     messageEl.textContent = text;
     
-    // Add service indicator for AI messages
     if (sender === 'ai' && service) {
       const indicator = document.createElement('div');
       indicator.className = 'ai-indicator';
@@ -284,50 +332,36 @@ Keep responses concise (2-3 sentences max) and supportive. Focus on one question
     chatContainer.appendChild(messageEl);
     chatContainer.scrollTop = chatContainer.scrollHeight;
 
-    // Save to history
     this.conversationHistory.push({ sender, text, timestamp: Date.now() });
     
-    // Keep last 20 messages for context
-    if (this.conversationHistory.length > 20) {
-      this.conversationHistory = this.conversationHistory.slice(-15);
+    // Keep conversation focused - only last 12 messages
+    if (this.conversationHistory.length > 12) {
+      this.conversationHistory = this.conversationHistory.slice(-10);
     }
   }
 
   speak(text) {
     if (!('speechSynthesis' in window)) return;
     
-    // Cancel any current speech
     speechSynthesis.cancel();
     
     const utterance = new SpeechSynthesisUtterance(text);
     
-    // Get ALL voices and find the most natural one
     const voices = speechSynthesis.getVoices();
-    
-    // Priority order for most human-like voices
     const naturalVoice = voices.find(voice => 
       voice.name.includes('Samantha') ||
       voice.name.includes('Alex') ||
       voice.name.includes('Natural') ||
-      voice.name.includes('Neural') ||
-      voice.name.includes('Premium') ||
-      voice.name.includes('Enhanced') ||
       (voice.name.includes('Google') && voice.name.includes('Female')) ||
-      (voice.name.includes('Microsoft') && voice.name.includes('Natural')) ||
-      voice.name.includes('Zira') ||
-      voice.name.includes('David')
-    ) || voices.find(voice => 
-      voice.lang.startsWith('en-US') && voice.localService
-    ) || voices.find(voice => voice.lang.startsWith('en')) || voices[0];
+      voice.name.includes('Zira')
+    ) || voices.find(voice => voice.lang.startsWith('en-US')) || voices[0];
     
     if (naturalVoice) {
       utterance.voice = naturalVoice;
-      console.log('Using voice:', naturalVoice.name);
     }
     
-    // Human-like speech settings
-    utterance.rate = 1.1;  // Slightly faster, more natural
-    utterance.pitch = 1.1; // Slightly higher pitch, friendlier
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0; 
     utterance.volume = 0.9;
     
     utterance.onstart = () => {
@@ -335,7 +369,6 @@ Keep responses concise (2-3 sentences max) and supportive. Focus on one question
     };
     
     utterance.onend = () => {
-      // AUTO-START listening again after speaking (continuous conversation)
       setTimeout(() => {
         if (!this.isListening) {
           this.startListening();
@@ -348,7 +381,7 @@ Keep responses concise (2-3 sentences max) and supportive. Focus on one question
 
   startListening() {
     if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-      alert('Voice recognition not supported in this browser. Try Chrome or Edge.');
+      alert('Voice recognition not supported. Try Chrome or Edge.');
       return;
     }
 
@@ -366,7 +399,6 @@ Keep responses concise (2-3 sentences max) and supportive. Focus on one question
     };
 
     this.recognition.onsoundstart = () => {
-      // Stop any current speech when user starts talking
       speechSynthesis.cancel();
     };
 
@@ -378,7 +410,7 @@ Keep responses concise (2-3 sentences max) and supportive. Focus on one question
     };
 
     this.recognition.onerror = (event) => {
-      console.error('Speech recognition error:', event.error);
+      console.error('Speech error:', event.error);
       this.updateStatus('❌ Voice error. Click to try again.');
       this.isListening = false;
       this.updateMicButton();
@@ -394,9 +426,8 @@ Keep responses concise (2-3 sentences max) and supportive. Focus on one question
 
   async handleUserInput(userText) {
     this.addMessage('user', userText);
-    this.updateStatus('🧠 Getting AI guidance...');
+    this.updateStatus('🧠 Getting next question...');
     
-    // Get response from your Netlify function
     const aiResult = await this.callNetlifyFunction(userText);
     this.addMessage('ai', aiResult.text, aiResult.service);
     this.speak(aiResult.text);
@@ -426,11 +457,11 @@ Keep responses concise (2-3 sentences max) and supportive. Focus on one question
     if (this.isListening) {
       micBtn.classList.add('listening');
       micIcon.textContent = '🔴';
-      micText.textContent = 'Stop Listening';
+      micText.textContent = 'Stop';
     } else {
       micBtn.classList.remove('listening');
       micIcon.textContent = '🎤';
-      micText.textContent = 'Start Listening';
+      micText.textContent = 'Talk';
     }
   }
 
@@ -441,21 +472,21 @@ Keep responses concise (2-3 sentences max) and supportive. Focus on one question
   clearChat() {
     document.getElementById('chatContainer').innerHTML = '';
     this.conversationHistory = [];
-    this.updateStatus('Chat cleared. Ready for a fresh conversation.');
+    this.currentQuestion = 0;
+    this.updateStatus('Ready for a new purchase decision');
     
-    // Show welcome message again
     setTimeout(() => {
-      const welcomeMsg = "Hi! I'm here to help you pause before impulse purchases. What's on your mind?";
-      this.addMessage('ai', welcomeMsg, 'AI Coach');
+      const welcomeMsg = "What are you thinking of buying?";
+      this.addMessage('ai', welcomeMsg, 'Pause Coach');
       this.speak(welcomeMsg);
     }, 500);
   }
 }
 
-// Initialize the app
-const coach = new AIImpulseCoach();
+// Initialize the focused coach
+const coach = new FocusedImpulseCoach();
 
-// Global functions for HTML onclick handlers
+// Global functions
 function toggleMicrophone() {
   coach.toggleMicrophone();
 }
@@ -464,13 +495,12 @@ function clearChat() {
   coach.clearChat();
 }
 
-// Load voices when available for better speech synthesis
+// Load voices for speech synthesis
 if ('speechSynthesis' in window) {
   speechSynthesis.onvoiceschanged = () => {
-    // Voices are now loaded and available
+    // Voices loaded
   };
   
-  // Try to load voices immediately
   if (speechSynthesis.getVoices().length === 0) {
     speechSynthesis.speak(new SpeechSynthesisUtterance(''));
   }
