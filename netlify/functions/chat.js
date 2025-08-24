@@ -1,10 +1,9 @@
 // netlify/functions/chat.js
-// Serverless function to connect to multiple free AI APIs
+// Fast ADHD-friendly impulse spending companion
 
-// Use built-in fetch (Node 18+) instead of node-fetch
 const fetch = globalThis.fetch;
 
-// Multiple free AI services as fallbacks
+// Prioritize fastest, most reliable services
 const AI_SERVICES = [
   {
     name: 'Groq',
@@ -13,38 +12,28 @@ const AI_SERVICES = [
       'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
       'Content-Type': 'application/json'
     },
-    model: 'llama3-8b-8192'
-  },
-  {
-    name: 'Hugging Face',
-    url: 'https://api-inference.huggingface.co/models/microsoft/DialoGPT-large',
-    headers: {
-      'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
-      'Content-Type': 'application/json'
-    },
-    model: 'microsoft/DialoGPT-large'
+    model: 'llama3-8b-8192',
+    timeout: 5000 // Much shorter timeout
   }
+  // Removed Hugging Face - it's too slow and unreliable
 ];
 
-const SYSTEM_PROMPT = `You are an ADHD-friendly AI companion specifically designed to help with impulse spending decisions. Your personality:
+const SYSTEM_PROMPT = `You ONLY help with impulse spending decisions using these 4 questions IN ORDER:
 
-- Warm, empathetic friend (never robotic or clinical)
-- Remember our conversation context
-- When someone mentions buying something, naturally guide them through these key questions:
-  1. Do you need this, or do you just want it?
-  2. Where will you store this?
-  3. Can you wait 24 hours before buying this?
-  4. How will you feel about this purchase tomorrow?
+1. "Do I need this, or do I just want it?"
+2. "Where will I store this?"  
+3. "Can I wait 24 hours before buying this?"
+4. "How will I feel about this purchase tomorrow?"
 
-CRITICAL RULES:
-- Keep responses SHORT (1-3 sentences max) - ADHD brains get overwhelmed
-- Don't list numbered questions - weave them naturally into conversation
-- Validate their feelings first before discussing purchases
-- Talk like texting a close friend, not giving therapy
-- Be supportive whether they decide to buy or not buy
-- Remember details they share and reference them naturally later
+RULES:
+- Ask ONE question at a time
+- Wait for their answer before moving to next question
+- Keep responses SHORT (1 sentence max) - ADHD brains get overwhelmed
+- Talk casual like texting a friend
+- ONLY discuss these 4 questions - nothing else
+- If they try to talk about other stuff, gently bring them back to the current question
 
-Respond as if you're talking out loud in a voice conversation.`;
+Start with question 1, then move through them in order. That's it.`;
 
 exports.handler = async (event, context) => {
   // Handle CORS
@@ -84,24 +73,21 @@ exports.handler = async (event, context) => {
       };
     }
 
-    // Use custom system prompt if provided, otherwise use default
     const finalSystemPrompt = systemPrompt || SYSTEM_PROMPT;
 
-    // Build conversation messages
+    // Build conversation - keep it shorter for speed
     const messages = [
       { role: 'system', content: finalSystemPrompt },
-      ...history.slice(-10), // Keep last 10 messages for context
+      ...history.slice(-6), // Only last 6 messages for speed
       { role: 'user', content: message }
     ];
 
-    // Try each AI service until one works
-    for (const service of AI_SERVICES) {
+    // Try AI service with much shorter timeout
+    if (AI_SERVICES.length > 0 && process.env.GROQ_API_KEY) {
       try {
-        console.log(`Trying ${service.name}... API Key present: ${!!process.env[service.name === 'Groq' ? 'GROQ_API_KEY' : 'HUGGINGFACE_API_KEY']}`);
-        const response = await callAIService(service, messages);
+        const response = await callAIService(AI_SERVICES[0], messages);
         
         if (response && response.trim()) {
-          console.log(`${service.name} succeeded with response:`, response.substring(0, 50));
           return {
             statusCode: 200,
             headers: {
@@ -110,20 +96,18 @@ exports.handler = async (event, context) => {
             },
             body: JSON.stringify({
               response: response.trim(),
-              service: service.name
+              service: 'Groq'
             })
           };
-        } else {
-          console.log(`${service.name} returned empty response`);
         }
       } catch (error) {
-        console.log(`${service.name} failed with error:`, error.message);
-        continue; // Try next service
+        console.log(`Groq failed, using fallback:`, error.message);
+        // Fall through to local fallback
       }
     }
 
-    // If all AI services fail, use local fallback
-    const fallbackResponse = getLocalFallback(message, history);
+    // Smart local fallback that feels more human
+    const fallbackResponse = getSmartFallback(message, history);
     
     return {
       statusCode: 200,
@@ -133,7 +117,7 @@ exports.handler = async (event, context) => {
       },
       body: JSON.stringify({
         response: fallbackResponse,
-        service: 'Local Coach'
+        service: 'Local Buddy'
       })
     };
 
@@ -147,7 +131,7 @@ exports.handler = async (event, context) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        response: "I'm having trouble connecting right now, but I'm still here to help you think through this decision.",
+        response: "ugh my brain's glitching rn but I'm still here! what were you thinking of buying?",
         service: 'Offline'
       })
     };
@@ -155,52 +139,15 @@ exports.handler = async (event, context) => {
 };
 
 async function callAIService(service, messages) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), service.timeout);
+
   try {
-    // Special handling for Hugging Face (different format)
-    if (service.name === 'Hugging Face') {
-      const lastMessage = messages[messages.length - 1].content;
-      const conversationContext = messages.slice(-3).map(m => m.content).join(' ');
-      
-      const response = await fetch(service.url, {
-        method: 'POST',
-        headers: service.headers,
-        body: JSON.stringify({
-          inputs: conversationContext,
-          parameters: {
-            max_new_tokens: 100,
-            temperature: 0.8,
-            do_sample: true,
-            return_full_text: false
-          }
-        }),
-        timeout: 10000 // 10 second timeout
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP ${response.status}: ${errorText}`);
-      }
-
-      const data = await response.json();
-      
-      // Handle different response formats
-      if (Array.isArray(data) && data.length > 0) {
-        return data[0].generated_text || data[0].text;
-      } else if (data.generated_text) {
-        return data.generated_text;
-      } else if (typeof data === 'string') {
-        return data;
-      }
-      
-      throw new Error('No valid response from Hugging Face');
-    }
-
-    // Standard OpenAI-compatible format (Groq)
     const requestBody = {
       model: service.model,
       messages: messages,
-      max_tokens: 150,
-      temperature: 0.8,
+      max_tokens: 80, // Shorter responses for speed
+      temperature: 0.9, // More personality
       stream: false
     };
 
@@ -208,8 +155,10 @@ async function callAIService(service, messages) {
       method: 'POST',
       headers: service.headers,
       body: JSON.stringify(requestBody),
-      timeout: 15000 // 15 second timeout
+      signal: controller.signal
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -225,26 +174,36 @@ async function callAIService(service, messages) {
     throw new Error('No valid response from API');
 
   } catch (error) {
-    console.error(`Error calling ${service.name}:`, error.message);
+    clearTimeout(timeoutId);
     throw error;
   }
 }
 
-function getLocalFallback(message, history) {
-  // ONLY focus on the 4 core impulse pause questions - NO generic responses
-  const coreQuestions = [
-    "Do you need this, or do you just want it?",
-    "Where will you store this?",
-    "Can you wait 24 hours before buying this?", 
-    "How will you feel about this purchase tomorrow?"
+function getSmartFallback(message, history) {
+  // The 4 EXACT questions from the PDF
+  const questions = [
+    "Do I need this, or do I just want it?",
+    "Where will I store this?", 
+    "Can I wait 24 hours before buying this?",
+    "How will I feel about this purchase tomorrow?"
   ];
   
-  // Determine which question to ask based on conversation
+  // Determine which question to ask based on conversation flow
   let questionIndex = 0;
-  if (history.length > 0) {
-    questionIndex = Math.min(history.length, 3);
+  
+  // Look at history to see where we are in the process
+  const historyText = history.map(h => h.text || '').join(' ').toLowerCase();
+  
+  if (historyText.includes('need') || historyText.includes('want')) {
+    questionIndex = 1; // Move to storage question
+  } else if (historyText.includes('store') || historyText.includes('put') || historyText.includes('space')) {
+    questionIndex = 2; // Move to 24 hour question  
+  } else if (historyText.includes('wait') || historyText.includes('24') || historyText.includes('hour')) {
+    questionIndex = 3; // Move to tomorrow question
   }
   
-  // Just ask the appropriate core question directly
-  return coreQuestions[questionIndex];
+  // Make sure we don't go past the last question
+  questionIndex = Math.min(questionIndex, questions.length - 1);
+  
+  return questions[questionIndex];
 }
