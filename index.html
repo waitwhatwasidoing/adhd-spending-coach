@@ -100,14 +100,6 @@
       text-align: right;
     }
     
-    .loading-message {
-      background: rgba(255, 193, 7, 0.2);
-      border: 1px solid rgba(255, 193, 7, 0.3);
-      margin-right: 60px;
-      font-style: italic;
-      opacity: 0.8;
-    }
-    
     .controls {
       display: flex;
       gap: 12px;
@@ -147,11 +139,6 @@
       animation: pulse 2s infinite;
     }
     
-    .btn.speaking {
-      background: rgba(255, 193, 7, 0.3);
-      border-color: rgba(255, 193, 7, 0.5);
-    }
-    
     @keyframes pulse {
       0%, 100% { opacity: 0.8; transform: scale(1); }
       50% { opacity: 1; transform: scale(1.05); }
@@ -166,7 +153,7 @@
       border-radius: 12px;
       margin-bottom: 15px;
     }
-    
+
     .ai-indicator {
       font-size: 10px;
       opacity: 0.6;
@@ -178,7 +165,7 @@
 <body>
   <div class="container">
     <div class="header">
-      <h1>🧠 AI Pause Coach</h1>
+      <h1>🧠 AI Impulse Pause Coach</h1>
       <p>Your intelligent ADHD-friendly companion</p>
     </div>
     
@@ -197,129 +184,87 @@
     </div>
     
     <div id="status" class="status">
-      Ready to listen and help you pause before impulse purchases
+      Ready to help you pause before impulse purchases
     </div>
   </div>
 
 <script>
 // =============================================================================
-// AI VOICE ASSISTANT WITH REAL BACKEND INTEGRATION
-// Connects to Netlify Functions for real AI responses
+// AI IMPULSE PAUSE COACH - NETLIFY FUNCTIONS INTEGRATION
+// Connects to your existing Netlify Functions with Groq & Hugging Face APIs
 // =============================================================================
 
-class AIVoiceCoach {
+class AIImpulseCoach {
   constructor() {
     this.isListening = false;
-    this.isSpeaking = false;
     this.recognition = null;
-    this.conversationHistory = JSON.parse(localStorage.getItem('ai_conversation') || '[]');
-    this.voices = [];
-    this.bestVoice = null;
+    this.conversationHistory = [];
     
-    // Netlify function endpoint
-    this.apiEndpoint = '/.netlify/functions/chat';
+    // Netlify function endpoints
+    this.chatEndpoint = '/.netlify/functions/chat';
     
-    this.initializeVoices();
     this.initializeApp();
   }
 
   async initializeApp() {
-    this.restoreConversation();
-    
-    // Welcome message if no previous conversation
-    if (this.conversationHistory.length === 0) {
-      const welcomeMsg = "Hey! I'm your AI pause friend. I'm here to chat and help you think through spending decisions. How are you doing today?";
-      this.addMessage('ai', welcomeMsg, 'AI');
-      this.speak(welcomeMsg);
-    }
+    // Show welcome message
+    const welcomeMsg = "Hi! I'm here to help you pause before impulse purchases. Tell me what you're thinking about buying and I'll guide you through some important questions.";
+    this.addMessage('ai', welcomeMsg, 'AI Coach');
+    this.speak(welcomeMsg);
   }
 
-  initializeVoices() {
-    if ('speechSynthesis' in window) {
-      const loadVoices = () => {
-        this.voices = speechSynthesis.getVoices();
-        this.bestVoice = this.voices.find(voice => 
-          voice.name.includes('Natural') || 
-          voice.name.includes('Neural') ||
-          voice.name.includes('Samantha') ||
-          voice.name.includes('Google US English Female') ||
-          voice.name.includes('Alex')
-        ) || this.voices.find(voice => voice.lang.startsWith('en')) || this.voices[0];
-      };
-      
-      speechSynthesis.onvoiceschanged = loadVoices;
-      loadVoices();
-    }
-  }
-
-  async callBackendAI(userMessage) {
+  async callNetlifyFunction(userMessage) {
     try {
-      // Convert conversation history to the format the backend expects
-      const historyFormatted = this.conversationHistory.slice(-10).map(msg => ({
-        role: msg.sender === 'user' ? 'user' : 'assistant',
-        content: msg.text
-      }));
-
-      const response = await fetch(this.apiEndpoint, {
+      const response = await fetch(this.chatEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           message: userMessage,
-          history: historyFormatted
+          history: this.conversationHistory.slice(-10).map(msg => ({
+            role: msg.sender === 'user' ? 'user' : 'assistant',
+            content: msg.text
+          })),
+          systemPrompt: `You are an ADHD-friendly impulse purchase coach. Your job is to help people pause and think through purchases by guiding them through these 4 questions in order:
+
+1. "Do I need this, or do I just want it?"
+2. "Where will I store this?"  
+3. "Can I wait 24 hours before buying this?"
+4. "How will I feel about this purchase tomorrow?"
+
+Be conversational, empathetic, and help them work through their thoughts. Don't just ask the questions directly - weave them naturally into conversation based on what they tell you. Help them think through the mental fog that comes with ADHD impulse decisions.
+
+Keep responses concise (2-3 sentences max) and supportive. Focus on one question at a time based on where they are in their thinking process.`
         })
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
       const data = await response.json();
       return {
-        text: data.response || data.error || "I'm here to help you think through this.",
-        service: data.service || 'unknown'
+        text: data.response || data.message || "I'm here to help you think through this purchase decision.",
+        service: data.service || 'AI'
       };
 
     } catch (error) {
-      console.error('Backend AI call failed:', error);
+      console.error('Netlify function call failed:', error);
       
-      // Fallback to local response if backend fails
+      // Emergency fallback - guide to core questions
+      const fallbackResponses = [
+        "Let's pause for a moment. What's making you want to buy this right now?",
+        "I'm having trouble connecting, but let's think: do you actually need this item, or is it more of a want?",
+        "Let's focus on what matters: where would you put this item once you get it home?",
+        "Take a breath with me. How do you think you'll feel about this purchase tomorrow morning?"
+      ];
+      
       return {
-        text: this.getLocalFallback(userMessage),
-        service: 'local_fallback'
+        text: fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)],
+        service: 'Offline Coach'
       };
     }
-  }
-
-  getLocalFallback(userMessage) {
-    const lower = userMessage.toLowerCase();
-    
-    const purchaseWords = ['buy', 'buying', 'purchase', 'order', 'sale', 'discount', 'deal', 'shopping'];
-    const isPurchase = purchaseWords.some(word => lower.includes(word));
-    
-    if (isPurchase) {
-      const responses = [
-        "I hear you thinking about this purchase. What's drawing you to it right now?",
-        "Let's pause together. Do you actually need this, or is it more of a want?",
-        "Good question to think about - where would you put this once you get it home?",
-        "How do you think you'll feel about this purchase tomorrow morning?"
-      ];
-      return responses[Math.floor(Math.random() * responses.length)];
-    }
-    
-    if (lower.includes('hello') || lower.includes('hi')) {
-      return "Hey! Nice to hear your voice. What's on your mind today?";
-    }
-    
-    const responses = [
-      "I'm listening. Tell me more about that.",
-      "That sounds important to you. What's behind that feeling?",
-      "I hear you. How are you processing that right now?",
-      "Thanks for sharing that with me. What feels most important about this?"
-    ];
-    
-    return responses[Math.floor(Math.random() * responses.length)];
   }
 
   addMessage(sender, text, service = null) {
@@ -328,11 +273,11 @@ class AIVoiceCoach {
     messageEl.className = `message ${sender}-message`;
     messageEl.textContent = text;
     
-    // Add AI service indicator for AI messages
+    // Add service indicator for AI messages
     if (sender === 'ai' && service) {
       const indicator = document.createElement('div');
       indicator.className = 'ai-indicator';
-      indicator.textContent = `powered by ${service}`;
+      indicator.textContent = `• ${service}`;
       messageEl.appendChild(indicator);
     }
     
@@ -342,55 +287,45 @@ class AIVoiceCoach {
     // Save to history
     this.conversationHistory.push({ sender, text, timestamp: Date.now() });
     
-    // Keep last 50 messages for context
-    if (this.conversationHistory.length > 50) {
-      this.conversationHistory = this.conversationHistory.slice(-40);
+    // Keep last 20 messages for context
+    if (this.conversationHistory.length > 20) {
+      this.conversationHistory = this.conversationHistory.slice(-15);
     }
-    
-    localStorage.setItem('ai_conversation', JSON.stringify(this.conversationHistory));
-  }
-
-  restoreConversation() {
-    const chatContainer = document.getElementById('chatContainer');
-    chatContainer.innerHTML = '';
-    
-    this.conversationHistory.forEach(msg => {
-      const messageEl = document.createElement('div');
-      messageEl.className = `message ${msg.sender}-message`;
-      messageEl.textContent = msg.text;
-      chatContainer.appendChild(messageEl);
-    });
-    
-    chatContainer.scrollTop = chatContainer.scrollHeight;
   }
 
   speak(text) {
     if (!('speechSynthesis' in window)) return;
     
     speechSynthesis.cancel();
-    this.isSpeaking = true;
     
     const utterance = new SpeechSynthesisUtterance(text);
-    if (this.bestVoice) {
-      utterance.voice = this.bestVoice;
-      utterance.lang = this.bestVoice.lang;
+    
+    // Get the best available natural voice
+    const voices = speechSynthesis.getVoices();
+    const naturalVoice = voices.find(voice => 
+      voice.name.includes('Neural') ||
+      voice.name.includes('Natural') ||
+      voice.name.includes('Google') ||
+      voice.name.includes('Alex') ||
+      voice.name.includes('Samantha') ||
+      (voice.lang.startsWith('en') && voice.localService)
+    ) || voices.find(voice => voice.lang.startsWith('en-US')) || voices[0];
+    
+    if (naturalVoice) {
+      utterance.voice = naturalVoice;
     }
     
+    // Optimal settings for natural speech
     utterance.rate = 0.9;
-    utterance.pitch = 1.1;
-    utterance.volume = 0.8;
+    utterance.pitch = 1.0;
+    utterance.volume = 0.9;
     
     utterance.onstart = () => {
-      this.updateStatus('🗣️ Speaking...', 'speaking');
+      this.updateStatus('🗣️ Speaking...');
     };
     
     utterance.onend = () => {
-      this.isSpeaking = false;
-      if (this.isListening) {
-        this.updateStatus('🎤 Listening...', 'listening');
-      } else {
-        this.updateStatus('Ready to listen and help you pause before impulse purchases');
-      }
+      this.updateStatus('Ready to continue - click microphone to talk');
     };
     
     speechSynthesis.speak(utterance);
@@ -405,41 +340,31 @@ class AIVoiceCoach {
     if (this.isListening) return;
 
     this.recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    this.recognition.continuous = true;
-    this.recognition.interimResults = true;
+    this.recognition.continuous = false;
+    this.recognition.interimResults = false;
     this.recognition.lang = 'en-US';
 
     this.recognition.onstart = () => {
       this.isListening = true;
       this.updateMicButton();
-      this.updateStatus('🎤 Listening...', 'listening');
+      this.updateStatus('🎤 Listening... speak now');
     };
 
     this.recognition.onsoundstart = () => {
-      // Stop speaking if user starts talking
-      if (this.isSpeaking) {
-        speechSynthesis.cancel();
-        this.isSpeaking = false;
-      }
+      // Stop any current speech when user starts talking
+      speechSynthesis.cancel();
     };
 
     this.recognition.onresult = (event) => {
-      let finalTranscript = '';
-      
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        if (event.results[i].isFinal) {
-          finalTranscript += event.results[i][0].transcript;
-        }
-      }
-
-      if (finalTranscript.trim()) {
-        this.handleUserInput(finalTranscript.trim());
+      const transcript = event.results[0][0].transcript.trim();
+      if (transcript) {
+        this.handleUserInput(transcript);
       }
     };
 
     this.recognition.onerror = (event) => {
       console.error('Speech recognition error:', event.error);
-      this.updateStatus('⚠️ Voice error. Click to try again.');
+      this.updateStatus('❌ Voice error. Click to try again.');
       this.isListening = false;
       this.updateMicButton();
     };
@@ -447,9 +372,6 @@ class AIVoiceCoach {
     this.recognition.onend = () => {
       this.isListening = false;
       this.updateMicButton();
-      if (!this.isSpeaking) {
-        this.updateStatus('Click microphone to continue talking');
-      }
     };
 
     this.recognition.start();
@@ -457,10 +379,10 @@ class AIVoiceCoach {
 
   async handleUserInput(userText) {
     this.addMessage('user', userText);
-    this.updateStatus('🧠 Thinking with AI...', 'thinking');
+    this.updateStatus('🧠 Getting AI guidance...');
     
-    // Get real AI response from backend
-    const aiResult = await this.callBackendAI(userText);
+    // Get response from your Netlify function
+    const aiResult = await this.callNetlifyFunction(userText);
     this.addMessage('ai', aiResult.text, aiResult.service);
     this.speak(aiResult.text);
   }
@@ -497,32 +419,47 @@ class AIVoiceCoach {
     }
   }
 
-  updateStatus(text, className = '') {
-    const statusEl = document.getElementById('status');
-    statusEl.textContent = text;
-    statusEl.className = `status ${className}`;
+  updateStatus(text) {
+    document.getElementById('status').textContent = text;
   }
 
   clearChat() {
     document.getElementById('chatContainer').innerHTML = '';
     this.conversationHistory = [];
-    localStorage.removeItem('ai_conversation');
-    this.updateStatus('Conversation cleared. Ready for a fresh start!');
+    this.updateStatus('Chat cleared. Ready for a fresh conversation.');
+    
+    // Show welcome message again
+    setTimeout(() => {
+      const welcomeMsg = "Hi! I'm here to help you pause before impulse purchases. What's on your mind?";
+      this.addMessage('ai', welcomeMsg, 'AI Coach');
+      this.speak(welcomeMsg);
+    }, 500);
   }
 }
 
 // Initialize the app
-const aiCoach = new AIVoiceCoach();
+const coach = new AIImpulseCoach();
 
 // Global functions for HTML onclick handlers
 function toggleMicrophone() {
-  aiCoach.toggleMicrophone();
+  coach.toggleMicrophone();
 }
 
 function clearChat() {
-  aiCoach.clearChat();
+  coach.clearChat();
 }
 
+// Load voices when available for better speech synthesis
+if ('speechSynthesis' in window) {
+  speechSynthesis.onvoiceschanged = () => {
+    // Voices are now loaded and available
+  };
+  
+  // Try to load voices immediately
+  if (speechSynthesis.getVoices().length === 0) {
+    speechSynthesis.speak(new SpeechSynthesisUtterance(''));
+  }
+}
 </script>
 </body>
 </html>
