@@ -296,28 +296,38 @@ Keep responses concise (2-3 sentences max) and supportive. Focus on one question
   speak(text) {
     if (!('speechSynthesis' in window)) return;
     
+    // Cancel any current speech
     speechSynthesis.cancel();
     
     const utterance = new SpeechSynthesisUtterance(text);
     
-    // Get the best available natural voice
+    // Get ALL voices and find the most natural one
     const voices = speechSynthesis.getVoices();
+    
+    // Priority order for most human-like voices
     const naturalVoice = voices.find(voice => 
-      voice.name.includes('Neural') ||
-      voice.name.includes('Natural') ||
-      voice.name.includes('Google') ||
-      voice.name.includes('Alex') ||
       voice.name.includes('Samantha') ||
-      (voice.lang.startsWith('en') && voice.localService)
-    ) || voices.find(voice => voice.lang.startsWith('en-US')) || voices[0];
+      voice.name.includes('Alex') ||
+      voice.name.includes('Natural') ||
+      voice.name.includes('Neural') ||
+      voice.name.includes('Premium') ||
+      voice.name.includes('Enhanced') ||
+      (voice.name.includes('Google') && voice.name.includes('Female')) ||
+      (voice.name.includes('Microsoft') && voice.name.includes('Natural')) ||
+      voice.name.includes('Zira') ||
+      voice.name.includes('David')
+    ) || voices.find(voice => 
+      voice.lang.startsWith('en-US') && voice.localService
+    ) || voices.find(voice => voice.lang.startsWith('en')) || voices[0];
     
     if (naturalVoice) {
       utterance.voice = naturalVoice;
+      console.log('Using voice:', naturalVoice.name);
     }
     
-    // Optimal settings for natural speech
-    utterance.rate = 0.9;
-    utterance.pitch = 1.0;
+    // Human-like speech settings
+    utterance.rate = 1.1;  // Slightly faster, more natural
+    utterance.pitch = 1.1; // Slightly higher pitch, friendlier
     utterance.volume = 0.9;
     
     utterance.onstart = () => {
@@ -325,7 +335,12 @@ Keep responses concise (2-3 sentences max) and supportive. Focus on one question
     };
     
     utterance.onend = () => {
-      this.updateStatus('Ready to continue - click microphone to talk');
+      // AUTO-START listening again after speaking (continuous conversation)
+      setTimeout(() => {
+        if (!this.isListening) {
+          this.startListening();
+        }
+      }, 500);
     };
     
     speechSynthesis.speak(utterance);
