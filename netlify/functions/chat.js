@@ -1,7 +1,8 @@
 // netlify/functions/chat.js
 // Serverless function to connect to multiple free AI APIs
 
-const fetch = require('node-fetch');
+// Use built-in fetch (Node 18+) instead of node-fetch
+const fetch = globalThis.fetch;
 
 // Multiple free AI services as fallbacks
 const AI_SERVICES = [
