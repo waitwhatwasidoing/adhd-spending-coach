@@ -12,7 +12,7 @@ const AI_SERVICES = [
       'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
       'Content-Type': 'application/json'
     },
-    model: 'llama3-70b-8192'
+    model: 'llama3-8b-8192'
   },
   {
     name: 'Hugging Face',
@@ -96,10 +96,11 @@ exports.handler = async (event, context) => {
     // Try each AI service until one works
     for (const service of AI_SERVICES) {
       try {
-        console.log(`Trying ${service.name}...`);
+        console.log(`Trying ${service.name}... API Key present: ${!!process.env[service.name === 'Groq' ? 'GROQ_API_KEY' : 'HUGGINGFACE_API_KEY']}`);
         const response = await callAIService(service, messages);
         
         if (response && response.trim()) {
+          console.log(`${service.name} succeeded with response:`, response.substring(0, 50));
           return {
             statusCode: 200,
             headers: {
@@ -111,9 +112,11 @@ exports.handler = async (event, context) => {
               service: service.name
             })
           };
+        } else {
+          console.log(`${service.name} returned empty response`);
         }
       } catch (error) {
-        console.log(`${service.name} failed:`, error.message);
+        console.log(`${service.name} failed with error:`, error.message);
         continue; // Try next service
       }
     }
@@ -227,44 +230,20 @@ async function callAIService(service, messages) {
 }
 
 function getLocalFallback(message, history) {
-  const lower = message.toLowerCase();
-  
-  // Check for purchase-related keywords
-  const purchaseWords = ['buy', 'buying', 'purchase', 'order', 'sale', 'discount', 'deal', 'shopping', 'cart', 'checkout'];
-  const isPurchase = purchaseWords.some(word => lower.includes(word));
-  
-  // Check emotional state
-  const stressWords = ['stressed', 'anxious', 'overwhelmed', 'tired', 'impulse', 'urge'];
-  const isStressed = stressWords.some(word => lower.includes(word));
-  
-  if (isPurchase) {
-    const purchaseResponses = [
-      "I hear you thinking about this purchase. What's drawing you to it right now?",
-      "Let's pause together. Do you actually need this, or is it more of a want?",
-      "Before we decide - where would you put this once you get it home?",
-      "Take a breath with me. How do you think you'll feel about this purchase tomorrow?"
-    ];
-    return purchaseResponses[Math.floor(Math.random() * purchaseResponses.length)];
-  }
-  
-  if (isStressed) {
-    return "I can hear some stress in your voice. Let's take a breath first. What's really going on?";
-  }
-  
-  if (lower.includes('hello') || lower.includes('hi') || lower.includes('hey')) {
-    return "Hey! Nice to hear your voice. What's on your mind today?";
-  }
-
-  if (lower.includes('help') || lower.includes('support')) {
-    return "I'm here for you. Tell me what's happening and we'll figure it out together.";
-  }
-  
-  const casualResponses = [
-    "I'm listening. Tell me more about that.",
-    "That sounds important to you. What's behind that feeling?",
-    "I hear you. How are you processing that right now?",
-    "Thanks for sharing that with me. What feels most important about this?"
+  // ONLY focus on the 4 core impulse pause questions - NO generic responses
+  const coreQuestions = [
+    "Do you need this, or do you just want it?",
+    "Where will you store this?",
+    "Can you wait 24 hours before buying this?", 
+    "How will you feel about this purchase tomorrow?"
   ];
   
-  return casualResponses[Math.floor(Math.random() * casualResponses.length)];
+  // Determine which question to ask based on conversation
+  let questionIndex = 0;
+  if (history.length > 0) {
+    questionIndex = Math.min(history.length, 3);
+  }
+  
+  // Just ask the appropriate core question directly
+  return coreQuestions[questionIndex];
 }
