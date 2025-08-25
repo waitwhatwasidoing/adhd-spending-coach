@@ -7,7 +7,7 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
-
+*.env
 # Logs
 *.log
 

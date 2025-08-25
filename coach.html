@@ -1,475 +1,563 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>WaitWhatWasIDoing - AI Spending Coach</title>
-    <meta name="description" content="Your AI-powered impulse spending guardian from The Unstoppable ADHD Planner">
+    <meta
+      name="description"
+      content="Your AI-powered impulse spending guardian from The Unstoppable ADHD Planner"
+    />
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+      body {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
 
+      .container {
+        background: white;
+        border-radius: 24px;
+        padding: 40px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        max-width: 500px;
+        width: 100%;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .container::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 150px;
+        height: 150px;
+        background: linear-gradient(
+          45deg,
+          rgba(102, 126, 234, 0.1),
+          rgba(118, 75, 162, 0.1)
+        );
+        border-radius: 50%;
+        transform: translate(40%, -40%);
+      }
+
+      .logo {
+        font-size: 32px;
+        font-weight: 800;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 10px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .tagline {
+        color: #718096;
+        font-size: 16px;
+        margin-bottom: 30px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .welcome-message {
+        background: linear-gradient(135deg, #ff6b6b, #feca57);
+        color: white;
+        padding: 25px;
+        border-radius: 16px;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .welcome-message::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(
+          circle,
+          rgba(255, 255, 255, 0.1) 0%,
+          transparent 70%
+        );
+        animation: pulse 4s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(0.8);
+          opacity: 0.5;
+        }
+        50% {
+          transform: scale(1.2);
+          opacity: 0.8;
+        }
+      }
+
+      .welcome-content {
+        position: relative;
+        z-index: 1;
+      }
+
+      .welcome-title {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+
+      .welcome-text {
+        font-size: 16px;
+        line-height: 1.5;
+        margin-bottom: 20px;
+      }
+
+      .cta-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        padding: 15px 25px;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+      }
+
+      .btn-primary {
+        background: #4299e1;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #3182ce;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(66, 153, 225, 0.3);
+      }
+
+      .btn-secondary {
+        background: #e2e8f0;
+        color: #4a5568;
+      }
+
+      .btn-secondary:hover {
+        background: #cbd5e0;
+        transform: translateY(-2px);
+      }
+
+      .features {
+        text-align: left;
+        background: #f7fafc;
+        border-radius: 16px;
+        padding: 25px;
+        margin-bottom: 30px;
+      }
+
+      .features h3 {
+        color: #2d3748;
+        margin-bottom: 15px;
+        font-size: 18px;
+        text-align: center;
+      }
+
+      .feature-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 12px;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+
+      .feature-icon {
+        font-size: 18px;
+        margin-top: 2px;
+      }
+
+      .upgrade-cta {
+        background: linear-gradient(135deg, #48bb78, #38a169);
+        color: white;
+        padding: 25px;
+        border-radius: 16px;
+        margin-top: 20px;
+      }
+
+      .upgrade-title {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+
+      .upgrade-text {
+        margin-bottom: 20px;
+        line-height: 1.5;
+      }
+
+      .price {
+        font-size: 24px;
+        font-weight: 800;
+        margin-bottom: 15px;
+      }
+
+      .footer {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e2e8f0;
+        color: #718096;
+        font-size: 14px;
+      }
+
+      .mobile-optimized {
+        display: block;
+      }
+
+      @media (max-width: 768px) {
         .container {
-            background: white;
-            border-radius: 24px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-            max-width: 500px;
-            width: 100%;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 150px;
-            height: 150px;
-            background: linear-gradient(45deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-            border-radius: 50%;
-            transform: translate(40%, -40%);
-        }
-
-        .logo {
-            font-size: 32px;
-            font-weight: 800;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 10px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .tagline {
-            color: #718096;
-            font-size: 16px;
-            margin-bottom: 30px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .welcome-message {
-            background: linear-gradient(135deg, #ff6b6b, #feca57);
-            color: white;
-            padding: 25px;
-            border-radius: 16px;
-            margin-bottom: 30px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .welcome-message::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            animation: pulse 4s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(0.8); opacity: 0.5; }
-            50% { transform: scale(1.2); opacity: 0.8; }
-        }
-
-        .welcome-content {
-            position: relative;
-            z-index: 1;
-        }
-
-        .welcome-title {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-
-        .welcome-text {
-            font-size: 16px;
-            line-height: 1.5;
-            margin-bottom: 20px;
+          padding: 30px 20px;
+          margin: 10px;
         }
 
         .cta-buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
+          flex-direction: column;
         }
 
         .btn {
-            padding: 15px 25px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
+          justify-content: center;
+          font-size: 15px;
+          padding: 12px 20px;
         }
-
-        .btn-primary {
-            background: #4299e1;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #3182ce;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(66, 153, 225, 0.3);
-        }
-
-        .btn-secondary {
-            background: #e2e8f0;
-            color: #4a5568;
-        }
-
-        .btn-secondary:hover {
-            background: #cbd5e0;
-            transform: translateY(-2px);
-        }
-
-        .features {
-            text-align: left;
-            background: #f7fafc;
-            border-radius: 16px;
-            padding: 25px;
-            margin-bottom: 30px;
-        }
-
-        .features h3 {
-            color: #2d3748;
-            margin-bottom: 15px;
-            font-size: 18px;
-            text-align: center;
-        }
-
-        .feature-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            margin-bottom: 12px;
-            font-size: 15px;
-            line-height: 1.5;
-        }
-
-        .feature-icon {
-            font-size: 18px;
-            margin-top: 2px;
-        }
-
-        .upgrade-cta {
-            background: linear-gradient(135deg, #48bb78, #38a169);
-            color: white;
-            padding: 25px;
-            border-radius: 16px;
-            margin-top: 20px;
-        }
-
-        .upgrade-title {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-
-        .upgrade-text {
-            margin-bottom: 20px;
-            line-height: 1.5;
-        }
-
-        .price {
-            font-size: 24px;
-            font-weight: 800;
-            margin-bottom: 15px;
-        }
-
-        .footer {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #e2e8f0;
-            color: #718096;
-            font-size: 14px;
-        }
-
-        .mobile-optimized {
-            display: block;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 30px 20px;
-                margin: 10px;
-            }
-            
-            .cta-buttons {
-                flex-direction: column;
-            }
-            
-            .btn {
-                justify-content: center;
-                font-size: 15px;
-                padding: 12px 20px;
-            }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div class="logo">🧠 WaitWhatWasIDoing</div>
-        <div class="tagline">AI-Powered ADHD Spending Coach</div>
+      <div class="logo">🧠 WaitWhatWasIDoing</div>
+      <div class="tagline">AI-Powered ADHD Spending Coach</div>
 
-        <div class="welcome-message">
-            <div class="welcome-content">
-                <div class="welcome-title">🎉 Welcome to Your FREE AI Coach!</div>
-                <div class="welcome-text">
-                    You just discovered the world's first AI spending coach designed specifically for ADHD brains. 
-                    I'm here to help you pause, think, and make mindful purchase decisions!
-                </div>
-                <div class="cta-buttons">
-                    <button class="btn btn-primary" onclick="startSpendingCoach()">
-                        🎤 Try AI Coach Now
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div class="features">
-            <h3>🚀 What Makes This Special:</h3>
-            <div class="feature-item">
-                <span class="feature-icon">🧠</span>
-                <span><strong>ADHD-Specific:</strong> Understands impulse triggers and dopamine seeking</span>
-            </div>
-            <div class="feature-item">
-                <span class="feature-icon">🎤</span>
-                <span><strong>Voice Powered:</strong> Just talk - no typing or forms to fill</span>
-            </div>
-            <div class="feature-item">
-                <span class="feature-icon">⚡</span>
-                <span><strong>Instant Help:</strong> Real-time guidance when you need it most</span>
-            </div>
-            <div class="feature-item">
-                <span class="feature-icon">💰</span>
-                <span><strong>Money Saving:</strong> Already helped users save $10,000+ collectively</span>
-            </div>
-        </div>
-
-        <!-- Voice Interface (Hidden Initially) -->
-        <div id="voiceInterface" style="display: none;">
-            <div class="voice-coach" id="voiceCoach">
-                <div style="background: linear-gradient(135deg, #ff6b6b, #feca57); border-radius: 16px; padding: 25px; color: white; margin-bottom: 20px;">
-                    <div style="font-size: 20px; margin-bottom: 10px;">🤖 AI Coach Active</div>
-                    <div id="coachMessage">Hi! I can hear you're thinking about buying something. Tell me what it is, and let's think it through together!</div>
-                </div>
-                
-                <div class="cta-buttons">
-                    <button class="btn btn-primary" id="listenBtn" onclick="startListening()">
-                        🎤 Start Talking
-                    </button>
-                    <button class="btn btn-secondary" onclick="tryExample()">
-                        💡 Try Example
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div class="upgrade-cta">
-            <div class="upgrade-title">🔥 Love This? Get The Complete System!</div>
-            <div class="upgrade-text">
-                This AI coach is just ONE feature of "The Unstoppable ADHD Planner" - a complete psychology-based 
-                system with visual trackers, daily planning, dopamine rewards, and more AI coaches!
-            </div>
-            <div class="price">Special Launch Price: $19 <span style="text-decoration: line-through; opacity: 0.7; font-size: 16px;">$47</span></div>
-            <button class="btn" style="background: white; color: #38a169;" onclick="buyFullPlanner()">
-                ✨ Get Complete Planner Now
+      <div class="welcome-message">
+        <div class="welcome-content">
+          <div class="welcome-title">🎉 Welcome to Your FREE AI Coach!</div>
+          <div class="welcome-text">
+            You just discovered the world's first AI spending coach designed
+            specifically for ADHD brains. I'm here to help you pause, think, and
+            make mindful purchase decisions!
+          </div>
+          <div class="cta-buttons">
+            <button class="btn btn-primary" onclick="startSpendingCoach()">
+              🎤 Try AI Coach Now
             </button>
+          </div>
         </div>
+      </div>
 
-        <div class="footer">
-            <p>🎯 This free AI coach gives you a taste of what's possible.</p>
-            <p>The complete planner includes progress trackers, daily planning, rewards system, and 4 more AI coaches!</p>
+      <div class="features">
+        <h3>🚀 What Makes This Special:</h3>
+        <div class="feature-item">
+          <span class="feature-icon">🧠</span>
+          <span
+            ><strong>ADHD-Specific:</strong> Understands impulse triggers and
+            dopamine seeking</span
+          >
         </div>
+        <div class="feature-item">
+          <span class="feature-icon">🎤</span>
+          <span
+            ><strong>Voice Powered:</strong> Just talk - no typing or forms to
+            fill</span
+          >
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">⚡</span>
+          <span
+            ><strong>Instant Help:</strong> Real-time guidance when you need it
+            most</span
+          >
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">💰</span>
+          <span
+            ><strong>Money Saving:</strong> Already helped users save $10,000+
+            collectively</span
+          >
+        </div>
+      </div>
+
+      <!-- Voice Interface (Hidden Initially) -->
+      <div id="voiceInterface" style="display: none">
+        <div class="voice-coach" id="voiceCoach">
+          <div
+            style="
+              background: linear-gradient(135deg, #ff6b6b, #feca57);
+              border-radius: 16px;
+              padding: 25px;
+              color: white;
+              margin-bottom: 20px;
+            "
+          >
+            <div style="font-size: 20px; margin-bottom: 10px">
+              🤖 AI Coach Active
+            </div>
+            <div id="coachMessage">
+              Hi! I can hear you're thinking about buying something. Tell me
+              what it is, and let's think it through together!
+            </div>
+          </div>
+
+          <div class="cta-buttons">
+            <button
+              class="btn btn-primary"
+              id="listenBtn"
+              onclick="startListening()"
+            >
+              🎤 Start Talking
+            </button>
+            <button class="btn btn-secondary" onclick="tryExample()">
+              💡 Try Example
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="upgrade-cta">
+        <div class="upgrade-title">🔥 Love This? Get The Complete System!</div>
+        <div class="upgrade-text">
+          This AI coach is just ONE feature of "The Unstoppable ADHD Planner" -
+          a complete psychology-based system with visual trackers, daily
+          planning, dopamine rewards, and more AI coaches!
+        </div>
+        <div class="price">
+          Special Launch Price: $19
+          <span
+            style="text-decoration: line-through; opacity: 0.7; font-size: 16px"
+            >$47</span
+          >
+        </div>
+        <button
+          class="btn"
+          style="background: white; color: #38a169"
+          onclick="buyFullPlanner()"
+        >
+          ✨ Get Complete Planner Now
+        </button>
+      </div>
+
+      <div class="footer">
+        <p>🎯 This free AI coach gives you a taste of what's possible.</p>
+        <p>
+          The complete planner includes progress trackers, daily planning,
+          rewards system, and 4 more AI coaches!
+        </p>
+      </div>
     </div>
 
+    <script src="config.js"></script>
     <script>
-        let recognition;
-        let isListening = false;
+      let recognition;
+      let isListening = false;
 
-        // Initialize speech recognition
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.continuous = false;
-            recognition.interimResults = false;
-            recognition.lang = 'en-US';
+      // Initialize speech recognition
+      if (
+        "webkitSpeechRecognition" in window ||
+        "SpeechRecognition" in window
+      ) {
+        recognition = new (window.SpeechRecognition ||
+          window.webkitSpeechRecognition)();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = "en-US";
 
-            recognition.onresult = function(event) {
-                const transcript = event.results[0][0].transcript;
-                processSpendingInput(transcript);
-            };
+        recognition.onresult = function (event) {
+          const transcript = event.results[0][0].transcript;
+          processSpendingInput(transcript);
+        };
 
-            recognition.onerror = function(event) {
-                updateCoachMessage("Sorry, I couldn't hear that clearly. Try speaking again!");
-                resetListenButton();
-            };
+        recognition.onerror = function (event) {
+          updateCoachMessage(
+            "Sorry, I couldn't hear that clearly. Try speaking again!"
+          );
+          resetListenButton();
+        };
 
-            recognition.onend = function() {
-                isListening = false;
-                resetListenButton();
-            };
+        recognition.onend = function () {
+          isListening = false;
+          resetListenButton();
+        };
+      }
+
+      function startSpendingCoach() {
+        document.getElementById("voiceInterface").style.display = "block";
+        document.querySelector(".welcome-message").style.display = "none";
+
+        // Scroll to voice interface
+        document
+          .getElementById("voiceInterface")
+          .scrollIntoView({ behavior: "smooth" });
+      }
+
+      function startListening() {
+        if (!recognition) {
+          alert(
+            "Voice recognition not supported. Please try Chrome or Edge browser!"
+          );
+          return;
         }
 
-        function startSpendingCoach() {
-            document.getElementById('voiceInterface').style.display = 'block';
-            document.querySelector('.welcome-message').style.display = 'none';
-            
-            // Scroll to voice interface
-            document.getElementById('voiceInterface').scrollIntoView({ behavior: 'smooth' });
+        if (isListening) return;
+
+        isListening = true;
+        updateCoachMessage(
+          "I'm listening... tell me what you're thinking about buying!"
+        );
+        document.getElementById("listenBtn").textContent = "🎧 Listening...";
+        document.getElementById("listenBtn").style.background = "#ed8936";
+
+        recognition.start();
+      }
+
+      function resetListenButton() {
+        document.getElementById("listenBtn").textContent = "🎤 Start Talking";
+        document.getElementById("listenBtn").style.background = "#4299e1";
+      }
+
+      function processSpendingInput(input) {
+        updateCoachMessage("Let me think about this...");
+
+        // Simulate processing time
+        setTimeout(() => {
+          const response = generateSpendingResponse(input);
+          updateCoachMessage(response);
+
+          // Text-to-speech response
+          if ("speechSynthesis" in window) {
+            const utterance = new SpeechSynthesisUtterance(response);
+            utterance.rate = 0.9;
+            utterance.pitch = 1;
+            speechSynthesis.speak(utterance);
+          }
+
+          // Show upsell after response
+          setTimeout(() => {
+            showUpsellMessage();
+          }, 5000);
+        }, 1500);
+      }
+
+      function generateSpendingResponse(input) {
+        const lowerInput = input.toLowerCase();
+
+        if (
+          lowerInput.includes("headphones") ||
+          lowerInput.includes("earbuds")
+        ) {
+          return "I hear you're interested in headphones! Let's pause for a moment. What's wrong with your current audio setup? And be honest - if you don't buy these today, will you even remember them next week? Your ADHD brain loves shiny new tech, but let's make sure this is solving a real problem, not just feeding the dopamine rush.";
         }
 
-        function startListening() {
-            if (!recognition) {
-                alert('Voice recognition not supported. Please try Chrome or Edge browser!');
-                return;
-            }
-
-            if (isListening) return;
-
-            isListening = true;
-            updateCoachMessage("I'm listening... tell me what you're thinking about buying!");
-            document.getElementById('listenBtn').textContent = '🎧 Listening...';
-            document.getElementById('listenBtn').style.background = '#ed8936';
-            
-            recognition.start();
+        if (
+          lowerInput.includes("clothes") ||
+          lowerInput.includes("shirt") ||
+          lowerInput.includes("jacket")
+        ) {
+          return "Clothing purchases can be tricky for ADHD brains! Quick reality check: do you have space in your closet? When did you last wear something similar? Sometimes our brains crave newness when we're actually just bored with current options. Try the 24-hour rule - bookmark this item and see if you still want it tomorrow.";
         }
 
-        function resetListenButton() {
-            document.getElementById('listenBtn').textContent = '🎤 Start Talking';
-            document.getElementById('listenBtn').style.background = '#4299e1';
+        if (lowerInput.includes("sale") || lowerInput.includes("discount")) {
+          return "Ah, the classic sale trap! Your ADHD brain is getting excited by the urgency, right? But remember: it's not a deal if you wouldn't buy it at full price. Sales create artificial scarcity to trigger impulse purchases. Take a breath. Is this solving a real problem or just feeding the excitement rush?";
         }
 
-        function processSpendingInput(input) {
-            updateCoachMessage("Let me think about this...");
-            
-            // Simulate processing time
-            setTimeout(() => {
-                const response = generateSpendingResponse(input);
-                updateCoachMessage(response);
-                
-                // Text-to-speech response
-                if ('speechSynthesis' in window) {
-                    const utterance = new SpeechSynthesisUtterance(response);
-                    utterance.rate = 0.9;
-                    utterance.pitch = 1;
-                    speechSynthesis.speak(utterance);
-                }
-                
-                // Show upsell after response
-                setTimeout(() => {
-                    showUpsellMessage();
-                }, 5000);
-                
-            }, 1500);
+        if (lowerInput.includes("amazon") || lowerInput.includes("online")) {
+          return "Online shopping is like candy for ADHD brains - instant gratification with one click! But here's the thing: close the tab. Seriously. If you still remember this item in 24 hours AND you can explain exactly how it improves your life, then consider it. Most of the time, we forget within hours because it was just dopamine seeking.";
         }
 
-        function generateSpendingResponse(input) {
-            const lowerInput = input.toLowerCase();
-            
-            if (lowerInput.includes('headphones') || lowerInput.includes('earbuds')) {
-                return "I hear you're interested in headphones! Let's pause for a moment. What's wrong with your current audio setup? And be honest - if you don't buy these today, will you even remember them next week? Your ADHD brain loves shiny new tech, but let's make sure this is solving a real problem, not just feeding the dopamine rush.";
-            }
-            
-            if (lowerInput.includes('clothes') || lowerInput.includes('shirt') || lowerInput.includes('jacket')) {
-                return "Clothing purchases can be tricky for ADHD brains! Quick reality check: do you have space in your closet? When did you last wear something similar? Sometimes our brains crave newness when we're actually just bored with current options. Try the 24-hour rule - bookmark this item and see if you still want it tomorrow.";
-            }
-            
-            if (lowerInput.includes('sale') || lowerInput.includes('discount')) {
-                return "Ah, the classic sale trap! Your ADHD brain is getting excited by the urgency, right? But remember: it's not a deal if you wouldn't buy it at full price. Sales create artificial scarcity to trigger impulse purchases. Take a breath. Is this solving a real problem or just feeding the excitement rush?";
-            }
-            
-            if (lowerInput.includes('amazon') || lowerInput.includes('online')) {
-                return "Online shopping is like candy for ADHD brains - instant gratification with one click! But here's the thing: close the tab. Seriously. If you still remember this item in 24 hours AND you can explain exactly how it improves your life, then consider it. Most of the time, we forget within hours because it was just dopamine seeking.";
-            }
-            
-            // Extract price if mentioned
-            const priceMatch = input.match(/\$(\d+)/);
-            if (priceMatch) {
-                const price = parseInt(priceMatch[1]);
-                if (price > 100) {
-                    return `That's $${price} - that's serious money! Here's my ADHD-specific advice: Sleep on it. Big purchases deserve at least 48 hours of consideration. Your impulse will likely fade, but if the logical need remains after two days, then you'll know it's a good decision. Set a phone reminder to reconsider in 48 hours.`;
-                } else if (price > 50) {
-                    return `$${price} isn't huge, but it adds up! Quick check: what did you buy last month that you forgot about? ADHD brains are great at justifying purchases in the moment. Try this: what problem does this solve that you couldn't solve with something you already own?`;
-                }
-            }
-            
-            // Default responses for various scenarios
-            const responses = [
-                "I can hear the excitement in your voice - that's your ADHD dopamine system activating! Let's slow down and think: What problem is this purchase actually solving? Is it a genuine need, or is your brain just seeking that shopping rush?",
-                
-                "Great pause! Your ADHD brain loves instant gratification, but future you will thank present you for thinking this through. Here's the key question: If you couldn't buy anything for the next month, would you even remember wanting this?",
-                
-                "Before we decide, let's check in: Are you bored, stressed, or avoiding a task right now? Sometimes shopping is just our ADHD brain's way of procrastinating. Address the real feeling first, then see if you still want this item.",
-                
-                "I love that you're using this pause moment! Your ADHD brain is wired for 'I want it now' but you're training it to 'let me think first.' That's huge growth! So tell me - where will you store this? And how will you feel about spending this money tomorrow morning?"
-            ];
-            
-            return responses[Math.floor(Math.random() * responses.length)];
+        // Extract price if mentioned
+        const priceMatch = input.match(/\$(\d+)/);
+        if (priceMatch) {
+          const price = parseInt(priceMatch[1]);
+          if (price > 100) {
+            return `That's $${price} - that's serious money! Here's my ADHD-specific advice: Sleep on it. Big purchases deserve at least 48 hours of consideration. Your impulse will likely fade, but if the logical need remains after two days, then you'll know it's a good decision. Set a phone reminder to reconsider in 48 hours.`;
+          } else if (price > 50) {
+            return `$${price} isn't huge, but it adds up! Quick check: what did you buy last month that you forgot about? ADHD brains are great at justifying purchases in the moment. Try this: what problem does this solve that you couldn't solve with something you already own?`;
+          }
         }
 
-        function updateCoachMessage(message) {
-            document.getElementById('coachMessage').textContent = message;
-        }
+        // Default responses for various scenarios
+        const responses = [
+          "I can hear the excitement in your voice - that's your ADHD dopamine system activating! Let's slow down and think: What problem is this purchase actually solving? Is it a genuine need, or is your brain just seeking that shopping rush?",
 
-        function tryExample() {
-            const examples = [
-                "I want to buy these wireless headphones for $150",
-                "There's a 50% off sale on this jacket I've been looking at",
-                "I found this cool kitchen gadget on Amazon",
-                "Should I buy this phone case I saw online?"
-            ];
-            
-            const randomExample = examples[Math.floor(Math.random() * examples.length)];
-            processSpendingInput(randomExample);
-        }
+          "Great pause! Your ADHD brain loves instant gratification, but future you will thank present you for thinking this through. Here's the key question: If you couldn't buy anything for the next month, would you even remember wanting this?",
 
-        function showUpsellMessage() {
-            updateCoachMessage("🔥 This is just a tiny taste of what's possible! The complete ADHD Planner has 4 more AI coaches, visual progress trackers, daily planning tools, and a scientific dopamine reward system. Want to see the complete system?");
-        }
+          "Before we decide, let's check in: Are you bored, stressed, or avoiding a task right now? Sometimes shopping is just our ADHD brain's way of procrastinating. Address the real feeling first, then see if you still want this item.",
 
-        function buyFullPlanner() {
-            // Replace this with your actual purchase link
-            window.open('https://waitwhatwasidoing.com/buy', '_blank');
-        }
+          "I love that you're using this pause moment! Your ADHD brain is wired for 'I want it now' but you're training it to 'let me think first.' That's huge growth! So tell me - where will you store this? And how will you feel about spending this money tomorrow morning?",
+        ];
 
-        // Add some dynamic elements
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(() => {
-                if (document.getElementById('voiceInterface').style.display === 'none') {
-                    updateCoachMessage("👋 Ready when you are! Just hit 'Try AI Coach Now' to experience the magic!");
-                }
-            }, 3000);
-        });
+        return responses[Math.floor(Math.random() * responses.length)];
+      }
+
+      function updateCoachMessage(message) {
+        document.getElementById("coachMessage").textContent = message;
+      }
+
+      function tryExample() {
+        const examples = [
+          "I want to buy these wireless headphones for $150",
+          "There's a 50% off sale on this jacket I've been looking at",
+          "I found this cool kitchen gadget on Amazon",
+          "Should I buy this phone case I saw online?",
+        ];
+
+        const randomExample =
+          examples[Math.floor(Math.random() * examples.length)];
+        processSpendingInput(randomExample);
+      }
+
+      function showUpsellMessage() {
+        updateCoachMessage(
+          "🔥 This is just a tiny taste of what's possible! The complete ADHD Planner has 4 more AI coaches, visual progress trackers, daily planning tools, and a scientific dopamine reward system. Want to see the complete system?"
+        );
+      }
+
+      function buyFullPlanner() {
+        // Replace this with your actual purchase link
+        window.open("https://waitwhatwasidoing.com/buy", "_blank");
+      }
+
+      // Add some dynamic elements
+      document.addEventListener("DOMContentLoaded", function () {
+        setTimeout(() => {
+          if (
+            document.getElementById("voiceInterface").style.display === "none"
+          ) {
+            updateCoachMessage(
+              "👋 Ready when you are! Just hit 'Try AI Coach Now' to experience the magic!"
+            );
+          }
+        }, 3000);
+      });
     </script>
-</body>
+  </body>
 </html>
