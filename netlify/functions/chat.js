@@ -6,15 +6,15 @@ const fetch = globalThis.fetch;
 // Prioritize fastest, most reliable services
 const AI_SERVICES = [
   {
-    name: 'Groq',
-    url: 'https://api.groq.com/openai/v1/chat/completions',
+    name: "Groq",
+    url: "https://api.groq.com/openai/v1/chat/completions",
     headers: {
-      'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
-      'Content-Type': 'application/json'
+      Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+      "Content-Type": "application/json",
     },
-    model: 'llama3-8b-8192',
-    timeout: 5000 // Much shorter timeout
-  }
+    model: "llama3-8b-8192",
+    timeout: 5000, // Much shorter timeout
+  },
   // Removed Hugging Face - it's too slow and unreliable
 ];
 
@@ -37,25 +37,25 @@ Start with question 1, then move through them in order. That's it.`;
 
 exports.handler = async (event, context) => {
   // Handle CORS
-  if (event.httpMethod === 'OPTIONS') {
+  if (event.httpMethod === "OPTIONS") {
     return {
       statusCode: 200,
       headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS'
-      }
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+      },
     };
   }
 
-  if (event.httpMethod !== 'POST') {
+  if (event.httpMethod !== "POST") {
     return {
       statusCode: 405,
       headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json'
+        "Access-Control-Allow-Origin": "*",
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ error: 'Method not allowed' })
+      body: JSON.stringify({ error: "Method not allowed" }),
     };
   }
 
@@ -66,10 +66,10 @@ exports.handler = async (event, context) => {
       return {
         statusCode: 400,
         headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json'
+          "Access-Control-Allow-Origin": "*",
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ error: 'Message is required' })
+        body: JSON.stringify({ error: "Message is required" }),
       };
     }
 
@@ -77,27 +77,27 @@ exports.handler = async (event, context) => {
 
     // Build conversation - keep it shorter for speed
     const messages = [
-      { role: 'system', content: finalSystemPrompt },
+      { role: "system", content: finalSystemPrompt },
       ...history.slice(-6), // Only last 6 messages for speed
-      { role: 'user', content: message }
+      { role: "user", content: message },
     ];
 
     // Try AI service with much shorter timeout
     if (AI_SERVICES.length > 0 && process.env.GROQ_API_KEY) {
       try {
         const response = await callAIService(AI_SERVICES[0], messages);
-        
+
         if (response && response.trim()) {
           return {
             statusCode: 200,
             headers: {
-              'Access-Control-Allow-Origin': '*',
-              'Content-Type': 'application/json'
+              "Access-Control-Allow-Origin": "*",
+              "Content-Type": "application/json",
             },
             body: JSON.stringify({
               response: response.trim(),
-              service: 'Groq'
-            })
+              service: "Groq",
+            }),
           };
         }
       } catch (error) {
@@ -108,32 +108,32 @@ exports.handler = async (event, context) => {
 
     // Smart local fallback that feels more human
     const fallbackResponse = getSmartFallback(message, history);
-    
+
     return {
       statusCode: 200,
       headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json'
+        "Access-Control-Allow-Origin": "https://waitwhatwasidoing.com",
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         response: fallbackResponse,
-        service: 'Local Buddy'
-      })
+        service: "Local Buddy",
+      }),
     };
-
   } catch (error) {
-    console.error('Function error:', error);
-    
+    console.error("Function error:", error);
+
     return {
       statusCode: 500,
       headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json'
+        "Access-Control-Allow-Origin": "*",
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        response: "ugh my brain's glitching rn but I'm still here! what were you thinking of buying?",
-        service: 'Offline'
-      })
+        response:
+          "ugh my brain's glitching rn but I'm still here! what were you thinking of buying?",
+        service: "Offline",
+      }),
     };
   }
 };
@@ -148,14 +148,14 @@ async function callAIService(service, messages) {
       messages: messages,
       max_tokens: 80, // Shorter responses for speed
       temperature: 0.9, // More personality
-      stream: false
+      stream: false,
     };
 
     const response = await fetch(service.url, {
-      method: 'POST',
+      method: "POST",
       headers: service.headers,
       body: JSON.stringify(requestBody),
-      signal: controller.signal
+      signal: controller.signal,
     });
 
     clearTimeout(timeoutId);
@@ -166,13 +166,12 @@ async function callAIService(service, messages) {
     }
 
     const data = await response.json();
-    
+
     if (data.choices && data.choices.length > 0 && data.choices[0].message) {
       return data.choices[0].message.content;
     }
-    
-    throw new Error('No valid response from API');
 
+    throw new Error("No valid response from API");
   } catch (error) {
     clearTimeout(timeoutId);
     throw error;
@@ -183,27 +182,38 @@ function getSmartFallback(message, history) {
   // The 4 EXACT questions from the PDF
   const questions = [
     "Do I need this, or do I just want it?",
-    "Where will I store this?", 
+    "Where will I store this?",
     "Can I wait 24 hours before buying this?",
-    "How will I feel about this purchase tomorrow?"
+    "How will I feel about this purchase tomorrow?",
   ];
-  
+
   // Determine which question to ask based on conversation flow
   let questionIndex = 0;
-  
+
   // Look at history to see where we are in the process
-  const historyText = history.map(h => h.text || '').join(' ').toLowerCase();
-  
-  if (historyText.includes('need') || historyText.includes('want')) {
+  const historyText = history
+    .map((h) => h.text || "")
+    .join(" ")
+    .toLowerCase();
+
+  if (historyText.includes("need") || historyText.includes("want")) {
     questionIndex = 1; // Move to storage question
-  } else if (historyText.includes('store') || historyText.includes('put') || historyText.includes('space')) {
-    questionIndex = 2; // Move to 24 hour question  
-  } else if (historyText.includes('wait') || historyText.includes('24') || historyText.includes('hour')) {
+  } else if (
+    historyText.includes("store") ||
+    historyText.includes("put") ||
+    historyText.includes("space")
+  ) {
+    questionIndex = 2; // Move to 24 hour question
+  } else if (
+    historyText.includes("wait") ||
+    historyText.includes("24") ||
+    historyText.includes("hour")
+  ) {
     questionIndex = 3; // Move to tomorrow question
   }
-  
+
   // Make sure we don't go past the last question
   questionIndex = Math.min(questionIndex, questions.length - 1);
-  
+
   return questions[questionIndex];
 }

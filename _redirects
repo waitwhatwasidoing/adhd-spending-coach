@@ -1,8 +1,13 @@
+https://waitwhatwasidoing.com/:splat 301!
+
 # QR Code - AI Chatbot
-/ai    /index.html    200
+
+/ai /index.html 200
 
 # Main page goes to Etsy
-/      https://www.etsy.com/shop/waitwhatwasidoing/?etsrc=sdt   301!
+
+/ https://www.etsy.com/shop/waitwhatwasidoing/?etsrc=sdt 301!
 
 # Redirect Netlify subdomain to custom domain
-https://adhd-spending-coach.netlify.app/*   https://waitwhatwasidoing.com/:splat   301!
+
+https://adhd-spending-coach.netlify.app/*

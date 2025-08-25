@@ -447,9 +447,12 @@
       function processSpendingInput(input) {
         updateCoachMessage("Let me think about this...");
 
+        // Sanitize input
+        const cleanInput = sanitizeInput(input);
+
         // Simulate processing time
         setTimeout(() => {
-          const response = generateSpendingResponse(input);
+          const response = generateSpendingResponse(cleanInput);
           updateCoachMessage(response);
 
           // Text-to-speech response
@@ -544,6 +547,11 @@
       function buyFullPlanner() {
         // Replace this with your actual purchase link
         window.open("https://waitwhatwasidoing.com/buy", "_blank");
+      }
+
+      function sanitizeInput(input) {
+        // Remove any <script> tags and trim spaces
+        return input.replace(/<script.*?>.*?<\/script>/gi, "").trim();
       }
 
       // Add some dynamic elements
